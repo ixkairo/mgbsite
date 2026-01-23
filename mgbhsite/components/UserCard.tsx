@@ -44,8 +44,8 @@ const UserCard: React.FC<UserCardProps> = ({ user, position, variant = 'compact'
     const getTopHighlight = () => {
       if (position === 1) return 'bg-mb-purple/[0.1] border-mb-purple/50 shadow-[0_0_40px_rgba(139,92,246,0.25)] ring-1 ring-mb-purple/30 hover:bg-mb-purple/[0.15] hover:shadow-[0_0_50px_rgba(255,255,255,0.2)]';
       if (position === 2) return 'bg-white/[0.09] border-white/30 shadow-[0_0_25px_rgba(255,255,255,0.15)] hover:bg-white/[0.12] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)]';
-      if (position === 3) return 'bg-white/[0.06] border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.08)] hover:bg-white/[0.1] hover:shadow-[0_0_35px_rgba(255,255,255,0.2)]';
-      return 'bg-white/[0.03] border-white/10 shadow-[0_0_10px_rgba(255,255,255,0.02)] hover:bg-white/[0.08] hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)]';
+      if (position === 3) return 'bg-white/[0.07] border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.08)] hover:bg-white/[0.1] hover:shadow-[0_0_35px_rgba(255,255,255,0.2)]';
+      return 'bg-white/[0.06] border-white/10 shadow-[0_0_10px_rgba(255,255,255,0.02)] hover:bg-white/[0.08] hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)]';
     };
 
     const getRankTextStyle = () => {
@@ -67,17 +67,17 @@ const UserCard: React.FC<UserCardProps> = ({ user, position, variant = 'compact'
         href={profileUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`group relative rounded-2xl py-4 px-6 md:px-8 flex items-center justify-between transition-all duration-500 block cursor-pointer backdrop-blur-md overflow-hidden border ${getTopHighlight()}`}
+        className={`group relative rounded-2xl py-2 px-1 sm:px-3 md:py-4 md:px-8 flex flex-col md:flex-row md:items-center md:justify-between transition-all duration-500 block cursor-pointer backdrop-blur-md overflow-hidden border ${getTopHighlight()}`}
       >
         <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-        <div className="flex items-center gap-6 md:gap-8 relative z-10 max-w-[50%] md:max-w-[40%] pointer-events-none">
+        <div className="flex items-center gap-2 md:gap-8 relative z-10 max-w-full md:max-w-[40%] pointer-events-none">
           <div className="flex-shrink-0 w-8 text-center">
-            <span className={`font-mono font-bold text-lg md:text-xl block transition-all duration-300 ${getRankTextStyle()} group-hover:text-white`}>
+            <span className={`font-mono font-bold text-[10px] md:text-xl block transition-all duration-300 ${getRankTextStyle()} group-hover:text-white`}>
               {position < 10 ? `0${position}` : position}
             </span>
           </div>
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="relative flex-shrink-0 w-10 h-10 md:w-12 md:h-12">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0">
+            <div className="relative flex-shrink-0 w-6 h-6 md:w-12 md:h-12">
               {!imgError ? (
                 <img
                   src={user.avatar_url}
@@ -92,22 +92,22 @@ const UserCard: React.FC<UserCardProps> = ({ user, position, variant = 'compact'
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <h3 title={primaryName} className={`font-black text-[13px] md:text-[14px] tracking-tight uppercase truncate transition-colors ${position === 1 ? 'text-white' : 'text-white/80 group-hover:text-white group-hover:drop-shadow-[0_0_8px_#fff]'}`}>
+              <h3 title={primaryName} className={`font-black text-[10px] md:text-[14px] tracking-tight uppercase truncate transition-colors ${position === 1 ? 'text-white' : 'text-white/80 group-hover:text-white group-hover:drop-shadow-[0_0_8px_#fff]'}`}>
                 {primaryName}
               </h3>
-              <p className="text-white/30 text-[9px] font-mono truncate uppercase tracking-[0.25em] group-hover:text-white/60 transition-colors">
+              <p className="text-white/30 text-[7px] md:text-[9px] font-mono truncate uppercase tracking-[0.25em] group-hover:text-white/60 transition-colors">
                 {secondaryName}
               </p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-6 md:gap-8 relative z-10 hidden md:flex pointer-events-none">
+        <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-end gap-x-2 gap-y-1 md:gap-8 relative z-10 pointer-events-none mt-2 md:mt-0">
           {statsList.map(({ key, label }) => (
-            <div key={key} className="text-right min-w-[65px] flex flex-col items-end">
-              <div className={`text-[8px] font-mono uppercase tracking-widest mb-1 transition-colors ${activeSortKey === key ? 'text-mb-purple/60' : 'text-white/10 group-hover:text-white/40'}`}>
+            <div key={key} className="text-right min-w-[40px] md:min-w-[65px] flex flex-col items-center md:items-end">
+              <div className={`text-[6px] md:text-[8px] font-mono uppercase tracking-widest mb-0.5 md:mb-1 transition-colors ${activeSortKey === key ? 'text-mb-purple/60' : 'text-white/10 group-hover:text-white/40'}`}>
                 {label}
               </div>
-              <span className={`font-mono text-[13px] md:text-[14px] transition-all duration-300 origin-right ${getStatValueStyle(key)} group-hover:text-white`}>
+              <span className={`font-mono text-[9px] md:text-[14px] transition-all duration-300 origin-right ${getStatValueStyle(key)} group-hover:text-white`}>
                 {formatValue(user[key as keyof User] as number)}
               </span>
             </div>
@@ -202,7 +202,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, position, variant = 'compact'
           <span className={`h-[1px] w-8 transition-colors duration-500 ${position === 1 ? 'bg-mb-purple' : 'bg-white/20'} group-hover:bg-white`} />
         </div>
       </div>
-      <div className="w-full grid grid-cols-3 gap-y-6 gap-x-2 pt-6 border-t border-white/10 group-hover:border-white/40 transition-colors duration-500 relative z-10 bg-black/20 group-hover:bg-black/40 -mx-8 px-8 pb-4 pointer-events-none">
+      <div className="w-full grid grid-cols-3 gap-y-6 gap-x-2 pt-6 border-t border-white/10 group-hover:border-white/40 transition-colors duration-500 relative z-10 bg-black/20 group-hover:bg-black/40 -mx-8 px-8 pb-4 pointer-events-none rounded-2xl">
         {statsList.map(({ key, label }) => (
           <div key={key} className="flex flex-col items-center">
             <p className={`text-[8px] uppercase font-bold tracking-[0.3em] mb-1 transition-colors duration-500 ${activeSortKey === key ? 'text-mb-purple' : 'text-white/20 group-hover:text-white/60'}`}>{label}</p>

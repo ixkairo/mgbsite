@@ -417,11 +417,24 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ headerRef }) => {
               ) : (
                 <>
                   {showHeroes && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                      {paginatedUsers.slice(0, 3).map((user) => (
-                        <UserCard key={user.username} user={user} position={user.stable_rank!} activeSortKey={sortKey} variant="hero" />
-                      ))}
-                    </div>
+                    <>
+                      <div className="hidden md:grid grid-cols-3 gap-4 mb-6">
+                        {paginatedUsers.slice(0, 3).map((user) => (
+                          <UserCard key={user.username} user={user} position={user.stable_rank!} activeSortKey={sortKey} variant="hero" />
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 mb-4 md:hidden">
+                        {paginatedUsers.slice(0, 3).map((user) => (
+                          <UserCard
+                            key={user.username}
+                            user={user}
+                            position={user.stable_rank!}
+                            variant="compact"
+                            activeSortKey={sortKey}
+                          />
+                        ))}
+                      </div>
+                    </>
                   )}
 
                   <div className="flex flex-col gap-4">

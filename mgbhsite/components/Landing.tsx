@@ -288,7 +288,19 @@ export const Landing = ({ onStart, skipAnimations = false }: { onStart: () => vo
         >
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${BG_STYLIZED_IMAGE}')`, filter: 'brightness(1.2)' }} />
         </MotionDiv>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(0,0,0,0.8)_100%)] z-15" />
+
+        {/* Soft light blur layers */}
+        <div className="absolute inset-0 flex items-center justify-center z-12">
+          <div className="absolute w-[150vw] h-[100vh] bg-white/[0.08] blur-[250px] rounded-full mix-blend-screen" />
+          <div className="absolute w-[80%] h-[120%] bg-white/[0.08] blur-[180px] rounded-full" />
+        </div>
+
+        {/* Vertical gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-transparent to-black/20 z-13" />
+
+        {/* Overlay / Vignette */}
+        <div className="absolute inset-0 bg-black/55 md:bg-black/60 z-14" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(0,0,0,0.4)_100%)] z-15" />
       </div>
 
       <div className="w-full h-full flex flex-col items-center relative">

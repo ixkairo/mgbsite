@@ -3,17 +3,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { User } from '@/types';
 import { fetchCarouselUsers } from '@/services/dataService';
 
-const SPAWN_INTERVAL = 1500;
-const DAMPING = 0.04;
-const HOVER_FORCE = 0.4;
-const COLLISION_MARGIN = 30;
-const REPULSION_RADIUS = 150;
-const REPULSION_STRENGTH = 0.12;
-
+const SPAWN_INTERVAL = 3000;
+const BASE_SPEED = 0.45;
 const SIZE_MIN = 85;
 const SIZE_MAX = 105;
-const SPEED_MIN = 0.45;
-const SPEED_MAX = 0.85;
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const shuffled = [...array];
@@ -30,13 +23,64 @@ interface Card {
   direction: number;
   x: number;
   y: number;
-  baseVx: number;
-  currentVx: number;
+  vx: number;
   size: number;
   src: string;
   username: string;
   element: HTMLDivElement | null;
 }
+
+const MobileCarousel: React.FC<{ users: User[] }> = ({ users }) => {
+  const mobileAvatars = users.slice(0, 20);
+  if (mobileAvatars.length === 0) return null;
+
+  // Double items for seamless loop
+  const duplicated = [...mobileAvatars, ...mobileAvatars];
+
+  return (
+    <div className="md:hidden w-full h-full overflow-hidden flex flex-col justify-center gap-6 py-4 pointer-events-none select-none">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes scroll-left {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes scroll-right {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+        .animate-scroll-left {
+          animation: scroll-left 50s linear infinite;
+        }
+        .animate-scroll-right {
+          animation: scroll-right 50s linear infinite;
+        }
+      `}} />
+
+      {/* Row 1: Left to Right */}
+      <div className="relative flex whitespace-nowrap overflow-hidden">
+        <div className="flex animate-scroll-right gap-4 px-2">
+          {duplicated.map((user, i) => (
+            <div key={`m1-${i}`} className="w-[70px] h-[70px] rounded-2xl border border-white/10 bg-white/5 opacity-70 overflow-hidden shrink-0 shadow-lg">
+              <img src={user.avatar_url} alt="" className="w-full h-full object-cover grayscale-[0.4] brightness-[0.8]" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 2: Right to Left */}
+      <div className="relative flex whitespace-nowrap overflow-hidden">
+        <div className="flex animate-scroll-left gap-4 px-2">
+          {duplicated.map((user, i) => (
+            <div key={`m2-${i}`} className="w-[70px] h-[70px] rounded-2xl border border-white/10 bg-white/5 opacity-70 overflow-hidden shrink-0 shadow-lg">
+              <img src={user.avatar_url} alt="" className="w-full h-full object-cover grayscale-[0.4] brightness-[0.8]" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ArtistCarousel: React.FC<{ containerHeight: number; fadeProgress: number }> = ({ containerHeight, fadeProgress }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,9 +90,10 @@ const ArtistCarousel: React.FC<{ containerHeight: number; fadeProgress: number }
   const [users, setUsers] = useState<User[]>([]);
   const requestRef = useRef<number>(0);
   const nextIdRef = useRef(0);
-  const mouseXRef = useRef(window.innerWidth / 2);
   const cycleQueueRef = useRef<User[]>([]);
   const lastLaneRef = useRef(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const spawnLockRef = useRef(false);
 
   const strengthRef = useRef(1 - fadeProgress);
   useEffect(() => {
@@ -65,23 +110,26 @@ const ArtistCarousel: React.FC<{ containerHeight: number; fadeProgress: number }
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => { mouseXRef.current = e.clientX; };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    // Only run card spawner on desktop
+    if (users.length === 0 || window.innerWidth <= 768) return;
 
-  useEffect(() => {
-    if (users.length === 0) return;
+    if (intervalRef.current) clearInterval(intervalRef.current);
 
     const spawnCard = () => {
+      // 1. Spawn Lock
+      if (spawnLockRef.current) return;
+      spawnLockRef.current = true;
+
+      console.log('SPAWN');
+
       const w = window.innerWidth;
 
-      // 1. Manage cycle queue
+      // 2. Manage cycle queue
       if (cycleQueueRef.current.length === 0) {
         cycleQueueRef.current = shuffleArray(users);
       }
 
-      // 2. Find next user in cycle that isn't currently on screen
+      // 3. Find next user in cycle that isn't currently on screen
       const currentOnScreen = new Set(cardsRef.current.map(c => c.username));
       let userIndex = -1;
       for (let i = 0; i < cycleQueueRef.current.length; i++) {
@@ -95,15 +143,14 @@ const ArtistCarousel: React.FC<{ containerHeight: number; fadeProgress: number }
       if (userIndex === -1) userIndex = 0;
       const user = cycleQueueRef.current.splice(userIndex, 1)[0];
 
-      // 3. Lane and direction
+      // 4. Lane and direction
       const lane = lastLaneRef.current === 0 ? 1 : 0;
       lastLaneRef.current = lane;
       const direction = lane === 0 ? 1 : -1;
 
-      // 4. Size and speed mapping (Smaller = Faster)
+      // 5. Fixed Speed
       const size = Math.floor(Math.random() * (SIZE_MAX - SIZE_MIN)) + SIZE_MIN;
-      const speedMagnitude = SPEED_MAX - ((size - SIZE_MIN) / (SIZE_MAX - SIZE_MIN)) * (SPEED_MAX - SPEED_MIN);
-      const baseVx = speedMagnitude * direction;
+      const currentVx = BASE_SPEED * direction;
 
       const y = lane === 0 ? 5 : (containerHeight / 2) + 5;
       const spawnX = direction > 0 ? -size - 50 : w + 50;
@@ -114,8 +161,7 @@ const ArtistCarousel: React.FC<{ containerHeight: number; fadeProgress: number }
         direction,
         x: spawnX,
         y,
-        baseVx,
-        currentVx: baseVx,
+        vx: currentVx,
         size,
         src: user.avatar_url,
         username: user.username,
@@ -124,88 +170,37 @@ const ArtistCarousel: React.FC<{ containerHeight: number; fadeProgress: number }
 
       cardsRef.current.push(newCard);
       setRenderedCards([...cardsRef.current]);
+
+      // Release lock on next frame
+      requestAnimationFrame(() => {
+        spawnLockRef.current = false;
+      });
     };
 
-    const interval = setInterval(spawnCard, SPAWN_INTERVAL);
+    intervalRef.current = setInterval(spawnCard, SPAWN_INTERVAL);
+
+    // Initial spawn
     const initialTimeout = setTimeout(spawnCard, 100);
 
     return () => {
-      clearInterval(interval);
+      if (intervalRef.current) clearInterval(intervalRef.current);
       clearTimeout(initialTimeout);
     };
   }, [containerHeight, users]);
 
   useEffect(() => {
+    // Only run animation loop on desktop
+    if (window.innerWidth <= 768) return;
+
     const animate = () => {
       const cards = cardsRef.current;
       const w = window.innerWidth;
-      const mouseX = mouseXRef.current;
-      const strength = strengthRef.current;
-
-      cards.forEach(card => {
-        let targetVx = card.baseVx;
-
-        if (hoveredId === card.id) {
-          const slowDownFactor = 1 - (0.85 * strength);
-          targetVx = card.baseVx * slowDownFactor;
-        } else {
-          const dx = (card.x + card.size / 2) - mouseX;
-          const dist = Math.abs(dx);
-          if (dist < 350) {
-            const pushBase = (1 - dist / 350) * HOVER_FORCE;
-            const push = pushBase * strength;
-            targetVx += dx > 0 ? push : -push;
-          }
-        }
-
-        cards.forEach(other => {
-          if (card.id === other.id || card.lane !== other.lane || card.direction !== other.direction) return;
-
-          const dx = card.x - other.x;
-          const dist = Math.abs(dx);
-
-          if (dist < REPULSION_RADIUS) {
-            const force = (1 - dist / REPULSION_RADIUS) * REPULSION_STRENGTH * strength;
-            if (dx > 0) card.currentVx += force;
-            else card.currentVx -= force;
-          }
-        });
-
-        card.currentVx += (targetVx - card.currentVx) * DAMPING;
-      });
-
-      [0, 1].forEach(lane => {
-        const dir = lane === 0 ? 1 : -1;
-        const group = cards.filter(c => c.lane === lane);
-        group.sort((a, b) => dir === 1 ? b.x - a.x : a.x - b.x);
-
-        for (let i = 1; i < group.length; i++) {
-          const front = group[i - 1];
-          const back = group[i];
-          const gap = dir === 1
-            ? front.x - (back.x + back.size)
-            : back.x - (front.x + front.size);
-
-          if (gap < COLLISION_MARGIN) {
-            if (dir === 1) back.x = front.x - back.size - COLLISION_MARGIN;
-            else back.x = front.x + front.size + COLLISION_MARGIN;
-
-            const relVel = (back.currentVx * dir) - (front.currentVx * dir);
-            if (relVel > 0) {
-              front.currentVx += dir * relVel * 0.4;
-              back.currentVx -= dir * relVel * 0.4;
-            } else {
-              back.currentVx = front.currentVx;
-            }
-          }
-        }
-      });
 
       let needsCleanup = false;
       const buffer = 100;
 
       cards.forEach(card => {
-        card.x += card.currentVx;
+        card.x += card.vx;
         if (card.element) {
           card.element.style.transform = `translate3d(${card.x}px, ${card.y}px, 0)`;
         }
@@ -227,69 +222,73 @@ const ArtistCarousel: React.FC<{ containerHeight: number; fadeProgress: number }
 
     requestRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(requestRef.current);
-  }, [hoveredId, renderedCards]);
+  }, [renderedCards]);
 
   const strength = 1 - fadeProgress;
 
   return (
-    <div ref={containerRef} className="w-full h-full relative overflow-visible pointer-events-none">
-      {renderedCards.map(card => (
-        <div
-          key={card.id}
-          ref={el => { card.element = el; }}
-          className="absolute top-0 left-0 will-change-transform"
-          style={{
-            width: card.size,
-            height: card.size,
-            zIndex: hoveredId === card.id ? 1000 : (card.lane === 0 ? 10 : 20),
-            pointerEvents: strength > 0.1 ? 'auto' : 'none'
-          }}
-          onMouseEnter={() => setHoveredId(card.id)}
-          onMouseLeave={() => setHoveredId(null)}
-        >
-          <a
-            href={`https://x.com/${card.username}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full h-full p-2 cursor-pointer transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-transform"
+    <>
+      <MobileCarousel users={users} />
+
+      <div ref={containerRef} className="hidden md:block w-full h-full relative overflow-visible pointer-events-none">
+        {renderedCards.map(card => (
+          <div
+            key={card.id}
+            ref={el => { card.element = el; }}
+            className="absolute top-0 left-0 will-change-transform"
             style={{
-              transform: (hoveredId === card.id && strength > 0.2)
-                ? `scale(${1 + (0.35 * strength)})`
-                : 'scale(1)'
+              width: card.size,
+              height: card.size,
+              zIndex: hoveredId === card.id ? 1000 : (card.lane === 0 ? 10 : 20),
+              pointerEvents: strength > 0.1 ? 'auto' : 'none'
             }}
+            onMouseEnter={() => setHoveredId(card.id)}
+            onMouseLeave={() => setHoveredId(null)}
           >
-            <div className={`
-              w-full h-full relative overflow-hidden rounded-2xl border transition-all duration-500
-              ${hoveredId === card.id && strength > 0.2
-                ? 'border-mb-purple shadow-[0_0_50px_rgba(139,92,246,0.6)] bg-black opacity-100'
-                : 'border-white/5 bg-white/5 backdrop-blur-[1px] opacity-80'
-              }
-            `}>
-              <img
-                src={card.src}
-                alt="Entity Impact"
-                className={`
-                  w-full h-full object-cover transition-all duration-500
-                  ${hoveredId === card.id && strength > 0.2
-                    ? 'grayscale-0 opacity-100 contrast-125 brightness-110 scale-110'
-                    : 'grayscale-[0.4] opacity-50 contrast-[0.8] brightness-[0.7]'
-                  }
-                `}
-              />
+            <a
+              href={`https://x.com/${card.username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full h-full p-2 cursor-pointer transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-transform"
+              style={{
+                transform: (hoveredId === card.id && strength > 0.2)
+                  ? `scale(${1 + (0.35 * strength)})`
+                  : 'scale(1)'
+              }}
+            >
+              <div className={`
+                w-full h-full relative overflow-hidden rounded-2xl border transition-all duration-500
+                ${hoveredId === card.id && strength > 0.2
+                  ? 'border-mb-purple shadow-[0_0_50px_rgba(139,92,246,0.6)] bg-black opacity-100'
+                  : 'border-white/5 bg-white/5 backdrop-blur-[1px] opacity-80'
+                }
+              `}>
+                <img
+                  src={card.src}
+                  alt="Entity Impact"
+                  className={`
+                    w-full h-full object-cover transition-all duration-500
+                    ${hoveredId === card.id && strength > 0.2
+                      ? 'grayscale-0 opacity-100 contrast-125 brightness-110 scale-110'
+                      : 'grayscale-[0.4] opacity-50 contrast-[0.8] brightness-[0.7]'
+                    }
+                  `}
+                />
 
-              <div
-                className="absolute inset-0 bg-gradient-to-t from-mb-purple/40 via-transparent to-transparent transition-opacity duration-500"
-                style={{ opacity: (hoveredId === card.id && strength > 0.2) ? 1 : 0 }}
-              />
+                <div
+                  className="absolute inset-0 bg-gradient-to-t from-mb-purple/40 via-transparent to-transparent transition-opacity duration-500"
+                  style={{ opacity: (hoveredId === card.id && strength > 0.2) ? 1 : 0 }}
+                />
 
-              {hoveredId === card.id && strength > 0.2 && (
-                <div className="absolute inset-0 bg-white/10 h-px w-full -translate-y-full animate-[streak_2s_linear_infinite] opacity-30 pointer-events-none" />
-              )}
-            </div>
-          </a>
-        </div>
-      ))}
-    </div>
+                {hoveredId === card.id && strength > 0.2 && (
+                  <div className="absolute inset-0 bg-white/10 h-px w-full -translate-y-full animate-[streak_2s_linear_infinite] opacity-30 pointer-events-none" />
+                )}
+              </div>
+            </a>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 
