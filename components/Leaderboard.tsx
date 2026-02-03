@@ -298,8 +298,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ headerRef }) => {
       <span className="relative z-10">{label}</span>
       {sortKey === sKey && (
         <div className={`absolute bottom-0 left-0 right-0 h-[1px] transition-all duration-300 ${isPrimary
-            ? 'bg-mb-purple shadow-[0_0_15px_#8B5CF6] h-[2px]'
-            : 'bg-mb-purple shadow-[0_0_10px_#8B5CF6]'
+          ? 'bg-mb-purple shadow-[0_0_15px_#8B5CF6] h-[2px]'
+          : 'bg-mb-purple shadow-[0_0_10px_#8B5CF6]'
           }`} />
       )}
     </button>
@@ -387,7 +387,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ headerRef }) => {
                 >
                   {/* Arrow */}
                   <img
-                    src="/arrow.png"
+                    src="arrow.png"
                     alt=""
                     className="w-[140px] h-auto scale-x-[-1] scale-y-[-1] rotate-[0deg]"
                   />
