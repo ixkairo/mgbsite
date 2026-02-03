@@ -201,7 +201,7 @@ const CharacterFlip: React.FC<{ char: string; index: number; isLink?: boolean }>
 
 const InteractiveCredits = () => {
   const segments = [
-    { text: "built by ", link: false },
+    { text: "created by ", link: false },
     { text: "ixkairo", link: true, href: "https://x.com/ixkairo" }
   ];
 
@@ -912,7 +912,7 @@ const PlayerPage: React.FC = () => {
                         <div className={`w-full md:w-auto flex flex-wrap items-center ${isMobileViewport ? 'justify-center' : 'justify-start md:justify-end'} gap-2 md:gap-4 md:ml-auto relative md:-right-40`}>
                           {/* Challenge Button - Glowing */}
                           <motion.a
-                            href="https://x.com/ixkairo/status/2018796261176918445?s=20"
+                            href="https://x.com/ixkairo/status/2018796261176918445"
                             target="_blank"
                             rel="noopener noreferrer"
                             whileHover={{ scale: 1.05 }}
