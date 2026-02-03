@@ -467,7 +467,7 @@ const PlayerPage: React.FC = () => {
       await new Promise((resolve, reject) => {
         bgImg.onload = resolve;
         bgImg.onerror = reject;
-        bgImg.src = '/penis.jpg';
+        bgImg.src = '/img/penis.jpg';
       });
 
       // Background Scaling - Fill 4600x2314 completely
@@ -548,7 +548,7 @@ const PlayerPage: React.FC = () => {
         await new Promise((resolve, reject) => {
           bgImg.onload = resolve;
           bgImg.onerror = reject;
-          bgImg.src = '/penis.jpg';
+          bgImg.src = '/img/penis.jpg';
         });
 
         const scale = Math.max(canvasW / bgImg.width, canvasH / bgImg.height);
@@ -1030,7 +1030,7 @@ const PlayerPage: React.FC = () => {
                                   <div
                                     className="absolute inset-0 bg-cover bg-center"
                                     style={{
-                                      backgroundImage: 'url(/penis.jpg)',
+                                      backgroundImage: 'url(/img/penis.jpg)',
                                       filter: 'brightness(0.7)',
                                     }}
                                   />
