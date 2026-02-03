@@ -387,7 +387,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ headerRef }) => {
                 >
                   {/* Arrow */}
                   <img
-                    src="../arrow.png"
+                    src="/img/arrow.png"
                     alt=""
                     className="w-[140px] h-auto scale-x-[-1] scale-y-[-1] rotate-[0deg]"
                   />
