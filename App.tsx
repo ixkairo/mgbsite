@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Header, { HEADER_HEIGHT } from './components/Header';
 import Leaderboard from './components/Leaderboard';
@@ -7,14 +8,23 @@ import MotionBackground from './components/MotionBackground';
 import { Landing } from './components/Landing';
 import SidePanels from './components/SidePanels';
 import ChaoticBackground from './components/ChaoticBackground';
+import PlayerPage from './components/player/PlayerPage';
 
 const MotionDiv = motion.div as any;
 const CRITICAL_BG_URL = "https://r2.flowith.net/gemini-proxy-go/1768800721916/24a7a252-c052-4680-813d-9f1fc2c0bc76.jpg";
 
-const App: React.FC = () => {
-  const [showLanding, setShowLanding] = useState(true);
-  const [hasLaunched, setHasLaunched] = useState(false);
-  const [mainVisible, setMainVisible] = useState(false);
+interface LeaderboardPageProps {
+  initialSkipLanding?: boolean;
+}
+
+const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ initialSkipLanding = false }) => {
+  const location = useLocation();
+  const state = location.state as { skipLanding?: boolean } | null;
+  const shouldSkipLanding = initialSkipLanding || state?.skipLanding;
+
+  const [showLanding, setShowLanding] = useState(!shouldSkipLanding);
+  const [hasLaunched, setHasLaunched] = useState(!!shouldSkipLanding);
+  const [mainVisible, setMainVisible] = useState(!!shouldSkipLanding);
   const [navDirection, setNavDirection] = useState<'forward' | 'backward'>('forward');
   const headerRef = useRef<HTMLElement>(null);
 
@@ -56,7 +66,7 @@ const App: React.FC = () => {
     setMainVisible(false);
     setTimeout(() => {
       setShowLanding(true);
-    }, 450); // Match backward fade-out duration
+    }, 450);
   };
 
   const handleLeaderboardClick = () => {
@@ -70,15 +80,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`relative min-h-screen font-sans bg-black text-white selection:bg-mb-purple ${showLanding ? 'overflow-hidden' : ''}`}>
-      {/* Background Layers - Beneath the main UI */}
-      <div className="fixed inset-0 z-0 bg-black">
-        <MotionBackground />
-        <ChaoticBackground />
-        <SidePanels />
-      </div>
-
-      {/* Truly Fixed Header */}
+    <div className={`relative min-h-screen font-sans bg-transparent text-white selection:bg-mb-purple ${showLanding ? 'overflow-hidden' : ''}`}>
       <div className={`fixed top-0 left-0 right-0 z-[70] pointer-events-none transition-all duration-[1100ms] ease-[cubic-bezier(0.7,0,0.2,1)] ${mainVisible ? 'opacity-100' : 'opacity-0'}`}>
         <Header
           ref={headerRef}
@@ -87,7 +89,6 @@ const App: React.FC = () => {
         />
       </div>
 
-      {/* Main UI Content Layer */}
       <div
         className={`relative z-[60] min-h-screen w-full transition-all 
           ${navDirection === 'forward'
@@ -102,13 +103,10 @@ const App: React.FC = () => {
         </main>
       </div>
 
-      {/* Landing Layer */}
       <AnimatePresence mode="wait">
         {showLanding && (
           <MotionDiv
             key="landing-door"
-            // If hasLaunched is true, it means we are returning, so animate from top.
-            // If false, it's the first load, so start at 0 (instantly visible).
             initial={navDirection === 'forward'
               ? { y: hasLaunched ? "-100%" : 0 }
               : { opacity: 0, y: 0 }}
@@ -138,6 +136,50 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
+  );
+};
+
+const AnimatedRoutes: React.FC = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <div key={location.pathname} className="min-h-screen">
+        <Routes location={location}>
+          <Route path="/card" element={
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+              className="w-full min-h-screen"
+            >
+              <PlayerPage />
+            </motion.div>
+          } />
+          <Route path="/leaderboard" element={<LeaderboardPage initialSkipLanding={true} />} />
+          <Route path="/" element={<LeaderboardPage initialSkipLanding={false} />} />
+        </Routes>
+      </div>
+    </AnimatePresence>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <div className="relative min-h-screen bg-black">
+        <div className="fixed inset-0 z-0 bg-black overflow-hidden">
+          <MotionBackground />
+          <ChaoticBackground />
+          <SidePanels />
+        </div>
+
+        <div className="relative z-10">
+          <AnimatedRoutes />
+        </div>
+      </div>
+    </BrowserRouter>
   );
 };
 

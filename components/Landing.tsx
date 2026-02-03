@@ -1,7 +1,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../constants';
+import { User as UserIcon } from 'lucide-react';
 
 const CINEMATIC_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -215,6 +217,7 @@ const SocialKey = ({ Icon, delay, href, skip, iconClassName = "w-4 h-4" }: { Ico
 };
 
 export const Landing = ({ onStart, skipAnimations = false }: { onStart: () => void, skipAnimations?: boolean }) => {
+  const navigate = useNavigate();
   const [stage, setStage] = useState<'idle' | 'final'>(skipAnimations ? 'final' : 'idle');
   const [autoLightPos, setAutoLightPos] = useState({ x: 50, y: 50 });
   const [showButton, setShowButton] = useState(skipAnimations);
@@ -480,18 +483,45 @@ That's the whole point`}
         </div>
         <AnimatePresence>
           {showButton && (
-            <MotionDiv
-              initial={skipAnimations ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ delay: skipAnimations ? 0 : 0.2 }}
-              className="fixed bottom-4 right-6 md:right-10 z-[100] flex flex-row gap-0.5 pointer-events-auto items-center"
-            >
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/20 mr-2 select-none">Official links:</span>
-              <SocialKey Icon={DiscordIcon} delay={0.6} href="https://discord.com/invite/MBkdC3gxcv" skip={skipAnimations} iconClassName="w-3.5 h-3.5 md:w-4 md:h-4" />
-              <SocialKey Icon={BrandIcon} delay={0.7} href="https://www.magicblock.xyz/" skip={skipAnimations} iconClassName="w-5 h-5 md:w-6 md:h-6" />
-              <SocialKey Icon={XIcon} delay={0.8} href="https://x.com/magicblock" skip={skipAnimations} iconClassName="w-3.5 h-3.5 md:w-4 md:h-4" />
-            </MotionDiv>
+            <>
+              {/* MagicCard Button - Top Left */}
+              <MotionDiv
+                initial={skipAnimations ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: skipAnimations ? 0 : 0.4 }}
+                className="fixed top-12 left-6 md:left-10 z-[100] pointer-events-auto"
+              >
+                <MotionDiv
+                  onClick={() => navigate('/card')}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-2 md:gap-4 cursor-pointer group/card relative"
+                >
+                  <MotionDiv
+                    className="w-1 md:w-2 h-1 md:h-2 rounded-full bg-mb-purple shadow-[0_0_12px_#8B5CF6]"
+                  />
+                  <div className="text-[10px] md:text-[14px] font-mono uppercase tracking-[0.2em] md:tracking-[0.4em] text-white/70 font-bold flex overflow-hidden">
+                    {"User's MagicCard".split('').map((char, i) => (
+                      <RotatingLetter key={i} letter={char} index={i} />
+                    ))}
+                  </div>
+                </MotionDiv>
+              </MotionDiv>
+
+              {/* Social Links - Bottom Right */}
+              <MotionDiv
+                initial={skipAnimations ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ delay: skipAnimations ? 0 : 0.2 }}
+                className="fixed bottom-4 right-6 md:right-10 z-[100] flex flex-row gap-0.5 pointer-events-auto items-center"
+              >
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/20 mr-2 select-none">Official links:</span>
+                <SocialKey Icon={DiscordIcon} delay={0.6} href="https://discord.com/invite/MBkdC3gxcv" skip={skipAnimations} iconClassName="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <SocialKey Icon={BrandIcon} delay={0.7} href="https://www.magicblock.xyz/" skip={skipAnimations} iconClassName="w-5 h-5 md:w-6 md:h-6" />
+                <SocialKey Icon={XIcon} delay={0.8} href="https://x.com/magicblock" skip={skipAnimations} iconClassName="w-3.5 h-3.5 md:w-4 md:h-4" />
+              </MotionDiv>
+            </>
           )}
         </AnimatePresence>
       </div>

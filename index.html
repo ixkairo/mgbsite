@@ -36,6 +36,7 @@
             'streak': 'streak 3s linear infinite',
             'marquee': 'marquee 20s linear infinite',
             'float': 'float 6s ease-in-out infinite',
+            'scan': 'scan 8s linear infinite',
           },
           keyframes: {
             streak: {
@@ -50,6 +51,10 @@
             float: {
               '0%, 100%': { transform: 'translateY(0)' },
               '50%': { transform: 'translateY(-12px)' },
+            },
+            scan: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(400%)' },
             }
           }
         }
@@ -67,6 +72,26 @@
       margin: 0;
       padding: 0;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Force high-quality rendering for all elements */
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    /* Improve quality for transformed elements */
+    [style*="transform"] {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      -webkit-perspective: 1000px;
+      perspective: 1000px;
+      transform: translateZ(0);
+      will-change: transform;
     }
 
     /* Custom Scrollbar */

@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { User, Tweet } from '../types';
 import { supabase } from './supabaseClient';
 
 export const fetchLeaderboardData = async (): Promise<User[]> => {
@@ -67,5 +67,54 @@ export const fetchCarouselUsers = async (): Promise<User[]> => {
     } catch (err) {
         console.warn('Carousel data sync failure');
         return [];
+    }
+};
+// Fallback search for specific user
+export const findUserByIdentifier = async (identifier: string): Promise<User | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .or(`username.ilike.${identifier},discord_username.ilike.${identifier},display_name.ilike.%${identifier}%`)
+            .limit(1)
+            .single();
+
+        if (error) return null;
+        return data as User;
+    } catch {
+        return null;
+    }
+};
+
+/**
+ * Fetches a single tweet record by its URL.
+ */
+export const fetchTweetByUrl = async (tweetUrl: string): Promise<Tweet | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('tweets')
+            .select('*')
+            .eq('tweet_url', tweetUrl)
+            .limit(1)
+            .single();
+
+        if (error) return null;
+
+        // Map DB record to Tweet interface
+        return {
+            id: data.id,
+            tweetId: data.tweet_url.match(/\/status\/(\d+)/)?.[1] || '',
+            text: data.text || '',
+            imageUrl: data.tweet_media_url,
+            likes: data.likes || 0,
+            retweets: data.retweets || 0,
+            replies: data.replies || 0,
+            views: data.views || 0,
+            quotes: data.quotes || 0,
+            url: data.tweet_url,
+            createdAt: data.last_updated // Using last_updated as creation date since it's the closest we have
+        } as Tweet;
+    } catch {
+        return null;
     }
 };

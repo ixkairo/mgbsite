@@ -228,17 +228,17 @@ const Header = forwardRef<HTMLElement, HeaderProps>(({ onLogoClick, onLeaderboar
           </MotionDiv>
         </MotionDiv>
 
-        <div 
+        <div
           ref={navItemsRef}
           className="flex items-center gap-4 md:gap-14 pointer-events-auto"
         >
              <div className="flex items-center gap-4 md:gap-12 whitespace-nowrap">
-                <MotionDiv 
+                <MotionDiv
                   onClick={onLeaderboardClick}
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center gap-2 md:gap-4 cursor-pointer group/lb relative pointer-events-auto"
                 >
-                   <MotionDiv 
+                   <MotionDiv
                     className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-mb-purple shadow-[0_0_12px_#8B5CF6]"
                    />
                    <div className="text-[10px] md:text-[14px] font-mono uppercase tracking-[0.15em] md:tracking-[0.4em] text-white/70 font-bold flex overflow-hidden">
