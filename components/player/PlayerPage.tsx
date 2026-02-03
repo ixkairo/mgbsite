@@ -896,12 +896,12 @@ const PlayerPage: React.FC = () => {
                               <span className="text-[8px] md:text-[9px] font-mono tracking-[0.3em] md:tracking-[0.4em] uppercase text-mb-purple font-bold">magiccard profile</span>
                             </div>
                             <h2 className={`font-sync font-bold tracking-tighter uppercase text-white leading-none flex items-baseline ${(player.twitterUsername || player.discordUsername || '').length > 18
-                                ? 'text-xl md:text-2xl'
-                                : (player.twitterUsername || player.discordUsername || '').length > 14
-                                  ? 'text-2xl md:text-3xl'
-                                  : (player.twitterUsername || player.discordUsername || '').length > 10
-                                    ? 'text-2xl md:text-4xl'
-                                    : 'text-2xl md:text-5xl'
+                              ? 'text-xl md:text-2xl'
+                              : (player.twitterUsername || player.discordUsername || '').length > 14
+                                ? 'text-2xl md:text-3xl'
+                                : (player.twitterUsername || player.discordUsername || '').length > 10
+                                  ? 'text-2xl md:text-4xl'
+                                  : 'text-2xl md:text-5xl'
                               }`}>
                               <span className="flex-shrink-0 whitespace-nowrap">{player.twitterUsername || player.discordUsername}</span>
                               <span className="text-white/40 font-sans font-bold text-sm md:text-2xl tracking-[0.2em] ml-2 md:ml-3 flex-shrink-0 whitespace-nowrap">MagicCard</span>
@@ -912,7 +912,7 @@ const PlayerPage: React.FC = () => {
                         <div className={`w-full md:w-auto flex flex-wrap items-center ${isMobileViewport ? 'justify-center' : 'justify-start md:justify-end'} gap-2 md:gap-4 md:ml-auto relative md:-right-40`}>
                           {/* Challenge Button - Glowing */}
                           <motion.a
-                            href="https://x.com/ixkairo"
+                            href="https://x.com/ixkairo/status/2018796261176918445?s=20"
                             target="_blank"
                             rel="noopener noreferrer"
                             whileHover={{ scale: 1.05 }}
@@ -941,8 +941,8 @@ const PlayerPage: React.FC = () => {
                             <button
                               onClick={() => setDownloadMode('fullscreen')}
                               className={`text-[7px] md:text-[9px] font-bold uppercase tracking-[0.15em] md:tracking-[0.25em] transition-all duration-300 whitespace-nowrap ${downloadMode === 'fullscreen'
-                                  ? 'text-mb-purple'
-                                  : 'text-white/40 hover:text-white/60'
+                                ? 'text-mb-purple'
+                                : 'text-white/40 hover:text-white/60'
                                 }`}
                             >
                               Full
@@ -957,8 +957,8 @@ const PlayerPage: React.FC = () => {
                             <button
                               onClick={() => setDownloadMode('withBackground')}
                               className={`text-[7px] md:text-[9px] font-bold uppercase tracking-[0.15em] md:tracking-[0.25em] transition-all duration-300 whitespace-nowrap ${downloadMode === 'withBackground'
-                                  ? 'text-mb-purple'
-                                  : 'text-white/40 hover:text-white/60'
+                                ? 'text-mb-purple'
+                                : 'text-white/40 hover:text-white/60'
                                 }`}
                             >
                               BG
