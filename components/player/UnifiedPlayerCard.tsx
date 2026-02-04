@@ -250,7 +250,7 @@ const UnifiedPlayerCard: React.FC<UnifiedPlayerCardProps> = ({ player, tweet, ac
               <div className="flex flex-col gap-1 shrink-0 relative z-10">
                 <div className="flex items-center gap-2 mb-1">
                   <Zap className={`w-3.5 h-3.5 fill-current ${rarity.accent}`} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Magician Score</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 whitespace-nowrap">Magician Score</span>
                 </div>
                 <p className="text-[10px] text-zinc-500 font-medium max-w-[210px] leading-relaxed">
                   Your influence on <span className="text-white/80">X (Twitter)</span> based on reach, engagement quality, and posting consistency.
@@ -272,7 +272,7 @@ const UnifiedPlayerCard: React.FC<UnifiedPlayerCardProps> = ({ player, tweet, ac
               <div className="flex flex-col gap-1 relative z-10">
                 <div className="flex items-center gap-2 mb-1">
                   <rarity.icon className={`w-4 h-4 ${rarity.accent}`} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Tier Achievement</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 whitespace-nowrap">Tier Achievement</span>
                 </div>
                 <div className={`text-4xl font-bold tracking-tight bg-gradient-to-r ${rarity.from} ${rarity.to} bg-clip-text text-transparent leading-none`}>
                   {rarity.tier}
@@ -327,7 +327,7 @@ const UnifiedPlayerCard: React.FC<UnifiedPlayerCardProps> = ({ player, tweet, ac
               <div className="flex-1 min-w-0 w-full px-8 py-7 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Best Tweet</span>
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] whitespace-nowrap">Best Tweet</span>
                     <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider">{new Date(tweet.createdAt || Date.now()).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                   </div>
                   <p className="text-base text-zinc-200 font-medium leading-relaxed line-clamp-2">
@@ -363,7 +363,7 @@ const UnifiedPlayerCard: React.FC<UnifiedPlayerCardProps> = ({ player, tweet, ac
                     href={tweet.url || `https://x.com/any/status/${tweet.tweetId || tweet.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/70 hover:text-white text-[10px] font-bold uppercase tracking-wider transition-all pointer-events-auto"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/70 hover:text-white text-[10px] font-bold uppercase tracking-wider transition-all pointer-events-auto whitespace-nowrap"
                   >
                     Open Post <ArrowUpRight className="w-3 h-3" />
                   </a>
