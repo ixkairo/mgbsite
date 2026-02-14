@@ -72,10 +72,14 @@ export const fetchCarouselUsers = async (): Promise<User[]> => {
 // Fallback search for specific user
 export const findUserByIdentifier = async (identifier: string): Promise<User | null> => {
     try {
+        // Sanitize input to prevent query syntax errors
+        const safeId = identifier.replace(/[^\w\d_@.-]/g, '');
+        if (!safeId) return null;
+
         const { data, error } = await supabase
             .from('users')
             .select('*')
-            .or(`username.ilike.${identifier},discord_username.ilike.${identifier},display_name.ilike.%${identifier}%`)
+            .or(`username.ilike.${safeId},discord_username.ilike.${safeId},display_name.ilike.%${safeId}%`)
             .limit(1)
             .single();
 

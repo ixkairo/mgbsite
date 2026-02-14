@@ -11,6 +11,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion, AnimatePresence } from 'framer-motion';
 import { computeMagicianScores } from '@/utils/magicianScore';
+import './valentine/heart.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -322,6 +323,43 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ headerRef }) => {
       <div className="fixed bottom-8 left-10 z-[100] hidden md:block select-none pointer-events-none">
         <InteractiveCredits />
       </div>
+
+      {/* Valentine Wall Badge / Link - Positioned on the "bangs" (top notch area) */}
+      {!loading && (
+        <div className="fixed top-8 md:top-10 left-0 right-0 z-[190] pointer-events-none flex flex-col items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              boxShadow: [
+                '0 0 15px rgba(236, 72, 153, 0.2)',
+                '0 0 35px rgba(236, 72, 153, 0.5)',
+                '0 0 15px rgba(236, 72, 153, 0.2)',
+              ]
+            }}
+            transition={{
+              opacity: { delay: 0.3, duration: 0.6 },
+              y: { delay: 0.3, duration: 0.6 },
+              boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+            }}
+            whileHover={{ scale: 1.05, backgroundColor: 'rgba(236, 72, 153, 0.15)' }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-3 px-6 py-2.5 rounded-full bg-pink-500/10 backdrop-blur-2xl border border-pink-500/30 shadow-[0_8px_32px_rgba(236,72,153,0.3)] hover:border-pink-500/60 transition-all pointer-events-auto cursor-pointer group"
+            onClick={() => navigate('/valentinewall')}
+          >
+            <div className="loader scale-[0.45] origin-center filter drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]"></div>
+            <div className="flex flex-col items-start leading-none">
+              <span className="text-[10px] md:text-[11px] font-mono font-bold text-white tracking-[0.25em] group-hover:text-pink-400 transition-colors uppercase">
+                Valentine's Wall
+              </span>
+              <span className="text-[7.5px] font-mono text-white/40 tracking-wider">
+                VOICES OF THE COMMUNITY
+              </span>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <div className="fixed bottom-4 right-10 z-[100] hidden sm:flex flex-row gap-0.5 pointer-events-auto items-center">
         <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/20 mr-2 select-none">Official links:</span>

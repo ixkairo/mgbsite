@@ -9,6 +9,7 @@ import { Landing } from './components/Landing';
 import SidePanels from './components/SidePanels';
 import ChaoticBackground from './components/ChaoticBackground';
 import PlayerPage from './components/player/PlayerPage';
+import ValentineWallPage from './components/valentine/ValentineWallPage';
 
 const MotionDiv = motion.div as any;
 const CRITICAL_BG_URL = "https://r2.flowith.net/gemini-proxy-go/1768800721916/24a7a252-c052-4680-813d-9f1fc2c0bc76.jpg";
@@ -157,6 +158,17 @@ const AnimatedRoutes: React.FC = () => {
               <PlayerPage />
             </motion.div>
           } />
+          <Route path="/valentinewall" element={
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+              className="w-full min-h-screen"
+            >
+              <ValentineWallPage />
+            </motion.div>
+          } />
           <Route path="/leaderboard" element={<LeaderboardPage initialSkipLanding={true} />} />
           <Route path="/" element={<LeaderboardPage initialSkipLanding={false} />} />
         </Routes>
@@ -165,20 +177,29 @@ const AnimatedRoutes: React.FC = () => {
   );
 };
 
+const AppInner: React.FC = () => {
+  const location = useLocation();
+  const isValentineWall = location.pathname.includes('/valentinewall');
+
+  return (
+    <div className="relative min-h-screen bg-black">
+      <div className="fixed inset-0 z-0 bg-black overflow-hidden">
+        <MotionBackground />
+        <ChaoticBackground speedMultiplier={isValentineWall ? 0.01 : 1.0} />
+        <SidePanels />
+      </div>
+
+      <div className="relative z-10">
+        <AnimatedRoutes />
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <div className="relative min-h-screen bg-black">
-        <div className="fixed inset-0 z-0 bg-black overflow-hidden">
-          <MotionBackground />
-          <ChaoticBackground />
-          <SidePanels />
-        </div>
-
-        <div className="relative z-10">
-          <AnimatedRoutes />
-        </div>
-      </div>
+      <AppInner />
     </BrowserRouter>
   );
 };

@@ -111,6 +111,18 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #8B5CF6;
     }
+
+    /* Hide horizontal scrollbar globally */
+    html,
+    body {
+      overflow-x: hidden !important;
+      max-width: 100vw;
+    }
+
+    ::-webkit-scrollbar:horizontal {
+      height: 0px;
+      display: none;
+    }
   </style>
   <script type="importmap">
 {

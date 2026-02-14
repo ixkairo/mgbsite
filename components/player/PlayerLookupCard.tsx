@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, AlertCircle, UserX } from 'lucide-react';
 
 interface PlayerLookupCardProps {
@@ -94,6 +94,42 @@ const PlayerLookupCard: React.FC<PlayerLookupCardProps> = ({ onFind }) => {
               </button>
             )}
           </div>
+
+          <AnimatePresence>
+            {state === 'notFound' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 mt-4 backdrop-blur-xl"
+              >
+                <div className="flex flex-col items-center text-center gap-2">
+                  <UserX className="w-6 h-6 text-white/20 mb-1" />
+                  <p className="text-[11px] text-white/60 font-mono uppercase tracking-[0.15em] leading-relaxed">
+                    <span className="text-white block mb-1 font-bold">Not Found</span>
+                    <span className="opacity-70">You are not a part of MagicBlock community yet.</span>
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+            {state === 'error' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6 mt-4 backdrop-blur-xl"
+              >
+                <div className="flex flex-col items-center text-center gap-2">
+                  <AlertCircle className="w-6 h-6 text-red-400/40 mb-1" />
+                  <p className="text-[11px] text-red-300/60 font-mono uppercase tracking-[0.15em] leading-relaxed">
+                    <span className="text-red-400 block mb-1 font-bold">Error</span>
+                    <span className="opacity-70">{errorMessage}</span>
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </form>
       </div>
     </motion.div>

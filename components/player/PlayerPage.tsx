@@ -672,7 +672,7 @@ const PlayerPage: React.FC = () => {
         }
       }
 
-      if (!foundUser) throw new Error('User not found');
+      if (!foundUser) throw new Error('Player not found');
 
       const mappedPlayer: Player = {
         discordId: 'unknown',

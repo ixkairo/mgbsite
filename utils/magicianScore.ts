@@ -1,4 +1,5 @@
 import { User, Player } from '@/types';
+import { getRarityConfig } from './rarity';
 
 interface UserWithScore extends User {
   magicianScore: number;
@@ -91,4 +92,23 @@ export function computePlayerMagicianScore(
     ...player,
     magicianScore: Number(magicianScore.toFixed(1))
   };
+}
+
+/**
+ * Returns the "best" role for a user.
+ * Prioritizes Discord roles (if available) then falls back to Magician Tier.
+ */
+export function getBestRole(user: User): string {
+  // If we have discrod_roles string, the first one is the best one (as per user request)
+  if (user.discrod_roles) {
+    // Split by comma, dash, or pipe, take first part and trim
+    const roles = user.discrod_roles.split(/[,\-|]/).map(r => r.trim());
+    if (roles.length > 0 && roles[0]) {
+      return roles[0];
+    }
+  }
+
+  const score = user.magicianScore ?? 0;
+  const rarity = getRarityConfig(score, [], user.username);
+  return rarity.tier;
 }
