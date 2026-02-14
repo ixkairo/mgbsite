@@ -757,9 +757,7 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
             className="w-full h-full flex flex-col items-center justify-center gap-8 max-w-2xl"
           >
             <div className="text-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-mb-purple/20 flex items-center justify-center mb-6 mx-auto">
-                <Heart className="w-8 h-8 text-mb-purple" />
-              </div>
+              <Heart className="w-10 h-10 text-mb-purple mb-6 mx-auto" />
               <h2 className="text-4xl font-sync font-bold uppercase text-white tracking-tighter mb-4">Your Valentines</h2>
               <p className="text-xs font-mono uppercase tracking-[0.2em] text-white/40">You can send up to 5 Valentines</p>
             </div>
