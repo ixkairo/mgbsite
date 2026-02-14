@@ -54,15 +54,24 @@ export const fetchAllValentines = async (): Promise<ValentineData[]> => {
     // 4. Enrich valentines with live data
     const enrichedValentines = (valentines || []).map((v: any) => {
       const sender = userMap.get(v.sender_username.toLowerCase());
-      if (sender) {
-        return {
-          ...v,
+      const recipient = v.recipient_username
+        ? userMap.get(v.recipient_username.toLowerCase())
+        : null;
+
+      return {
+        ...v,
+        // Sender enrichment
+        ...(sender ? {
           sender_score: sender.magicianScore,
-          sender_roles_raw: sender.discrod_roles, // typo preserved from types.ts
+          sender_roles_raw: sender.discrod_roles,
           sender_role: sender.discrod_roles ? sender.discrod_roles.split(/[,\-|]/)[0].trim() : v.sender_role
-        };
-      }
-      return v;
+        } : {}),
+        // Recipient enrichment
+        ...(recipient ? {
+          recipient_roles_raw: recipient.discrod_roles,
+          recipient_role: recipient.discrod_roles ? recipient.discrod_roles.split(/[,\-|]/)[0].trim() : v.recipient_role
+        } : {})
+      };
     });
 
     return enrichedValentines as ValentineData[];
