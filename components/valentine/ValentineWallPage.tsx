@@ -18,7 +18,103 @@ import {
 import { ValentineData, fetchAllValentines } from '../../services/valentineService';
 import { DottedSurface } from '../ui/dotted-surface';
 import { ThemeProvider } from 'next-themes';
+
+const CharacterFlip: React.FC<{ char: string; index: number; isLink?: boolean }> = React.memo(({ char, index, isLink }) => {
+  return (
+    <span
+      className={`text-[9px] font-mono uppercase tracking-[0.25em] font-bold inline-block transition-all duration-300 ${isLink ? 'hover:text-mb-purple' : ''}`}
+      style={{
+        opacity: isLink ? 0.7 : 0.5,
+        color: isLink ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.3)',
+        transitionDelay: `${index * 0.01}s`
+      }}
+    >
+      {char === ' ' ? '\u00A0' : char}
+    </span>
+  );
+});
+
+const InteractiveCredits = () => {
+  const segments = [
+    { text: "created by ", link: false },
+    { text: "ixkairo", link: true, href: "https://x.com/ixkairo" }
+  ];
+
+  let charIndexCounter = 0;
+
+  return (
+    <div className="flex pointer-events-auto select-none gap-0">
+      {segments.map((segment, sIdx) => {
+        const chars = segment.text.split('');
+        const segmentBase = charIndexCounter;
+        charIndexCounter += chars.length;
+
+        if (segment.link) {
+          return (
+            <a
+              key={sIdx}
+              href={segment.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex group/credit"
+            >
+              {chars.map((char, cIdx) => (
+                <CharacterFlip key={cIdx} char={char} index={segmentBase + cIdx} isLink />
+              ))}
+            </a>
+          );
+        }
+
+        return (
+          <div key={sIdx} className="flex">
+            {chars.map((char, cIdx) => (
+              <CharacterFlip key={cIdx} char={char} index={segmentBase + cIdx} />
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 import './heart.css';
+
+const CARD_DESIGN_SIZE = 650;
+
+const CrispCard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const inner = innerRef.current;
+    if (!wrapper || !inner) return;
+
+    const update = () => {
+      const w = wrapper.offsetWidth;
+      if (w > 0) {
+        inner.style.transform = `scale(${w / CARD_DESIGN_SIZE})`;
+      }
+    };
+
+    const ro = new ResizeObserver(update);
+    ro.observe(wrapper);
+    update();
+
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="w-full aspect-square relative">
+      <div
+        ref={innerRef}
+        className="absolute top-0 left-0 origin-top-left"
+        style={{ width: CARD_DESIGN_SIZE, height: CARD_DESIGN_SIZE }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const ValentineWallPage: React.FC = () => {
   const navigate = useNavigate();
@@ -139,7 +235,7 @@ const ValentineWallPage: React.FC = () => {
               <span className="text-[8px] md:text-[9px] font-mono tracking-[0.4em] uppercase text-mb-purple font-bold">valentine's day 2026</span>
             </div>
             <h1 className="text-lg md:text-3xl font-sync font-bold tracking-tighter uppercase text-white leading-none flex items-baseline gap-2">
-              <span>Valentine Wall</span>
+              <span>MGB Valentine Wall</span>
               <Heart className="w-3 md:w-4 h-3 md:h-4 text-mb-purple fill-mb-purple/30 flex-shrink-0" />
             </h1>
           </motion.div>
@@ -293,13 +389,15 @@ const ValentineWallPage: React.FC = () => {
                       color="rgba(255,255,255,0.12)"
                     />
                     <div
-                      className="w-full h-full"
+                      className="w-full"
                       onClick={() => setSelectedValentine(valentine)}
                     >
-                      <ValentineCard
-                        valentine={valentine}
-                        layoutId={`wall-card-${valentine.sender_username}-${index}`}
-                      />
+                      <CrispCard>
+                        <ValentineCard
+                          valentine={valentine}
+                          layoutId={`wall-card-${valentine.sender_username}-${index}`}
+                        />
+                      </CrispCard>
                     </div>
                   </GridItem>
                 ))}
@@ -331,6 +429,11 @@ const ValentineWallPage: React.FC = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Persistent Page Credit */}
+      <div className="fixed bottom-8 right-10 z-[100] hidden md:block select-none pointer-events-none">
+        <InteractiveCredits />
+      </div>
     </div >
   );
 };

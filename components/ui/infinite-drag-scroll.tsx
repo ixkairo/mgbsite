@@ -3,6 +3,7 @@ import {
     animate,
     motion,
     useMotionValue,
+    useDragControls,
 } from "framer-motion";
 import {
     memo,
@@ -38,6 +39,7 @@ export const DraggableContainer = React.forwardRef<DraggableContainerHandle, {
     const x = useMotionValue(0);
     const y = useMotionValue(0);
     const scale = useMotionValue(1);
+    const dragControls = useDragControls();
 
     const isInteracting = useRef(false);
     const [constraints, setConstraints] = useState<{ left: number; right: number; top: number; bottom: number } | undefined>(undefined);
@@ -172,11 +174,14 @@ export const DraggableContainer = React.forwardRef<DraggableContainerHandle, {
         <GridVariantContext.Provider value={variant}>
             <div
                 ref={parentRef}
-                className="h-dvh w-full overflow-hidden bg-transparent relative flex items-center justify-center pointer-events-auto"
+                onPointerDown={(e) => { e.preventDefault(); dragControls.start(e); }}
+                className="h-dvh w-full overflow-hidden bg-transparent relative flex items-center justify-center pointer-events-auto cursor-grab active:cursor-grabbing select-none"
             >
                 <motion.div style={{ scale }} className="will-change-transform">
                     <motion.div
                         drag
+                        dragControls={dragControls}
+                        dragListener={false}
                         dragConstraints={constraints}
                         dragElastic={0.2} // Smoother bounce
                         dragMomentum={true}
@@ -187,12 +192,9 @@ export const DraggableContainer = React.forwardRef<DraggableContainerHandle, {
                         }}
                         onDragStart={handleInteractionStart}
                         onDragEnd={handleInteractionEnd}
-                        onMouseDown={handleInteractionStart}
-                        onMouseUp={handleInteractionEnd}
-                        onMouseLeave={handleInteractionEnd}
                         style={{ x, y }}
                         className={cn(
-                            "h-fit w-fit cursor-grab bg-transparent active:cursor-grabbing will-change-transform",
+                            "h-fit w-fit will-change-transform",
                             className,
                         )}
                     >

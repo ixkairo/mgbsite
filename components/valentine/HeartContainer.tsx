@@ -29,11 +29,21 @@ const HeartContainer: React.FC<HeartContainerProps> = ({
       }}
     >
 
-      {/* SHADOW BACKING - Darkened silhouette for much better visibility */}
+      {/* SHADOW BACKING - Heart-shaped darkened silhouette */}
       {showShadow && (
-        <div
-          className="absolute inset-[5%] rounded-full opacity-80 blur-[25px] z-[-2]"
-          style={{ backgroundColor: 'black' }}
+        <img
+          src="/heart1.png"
+          alt=""
+          className="absolute pointer-events-none"
+          style={{
+            inset: '-8%',
+            width: '116%',
+            height: '116%',
+            objectFit: 'contain',
+            filter: 'brightness(0) blur(30px)',
+            opacity: 0.85,
+            zIndex: 0,
+          }}
         />
       )}
 
