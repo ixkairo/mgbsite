@@ -449,6 +449,89 @@ const ValentineWallPage: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Valentine Received Panel — fixed right side, visible after auth */}
+      <AnimatePresence>
+        {currentUsername && (() => {
+          const received = valentines.filter(
+            v => v.recipient_type === 'user' && v.recipient_username === currentUsername
+          );
+          if (received.length === 0) return null;
+          return (
+            <motion.div
+              key="received-panel"
+              initial={{ opacity: 0, y: 15, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.97 }}
+              transition={{ duration: 0.5, delay: 0.8, ease: [0.23, 1, 0.32, 1] }}
+              className="fixed right-4 md:right-6 top-32 md:top-36 z-[190] w-56 md:w-60 pointer-events-auto hidden md:block"
+            >
+              {/* Ambient glow behind panel */}
+              <div
+                className="absolute -inset-4 rounded-3xl pointer-events-none"
+                style={{
+                  background: 'radial-gradient(ellipse at center, rgba(236,72,153,0.08) 0%, transparent 70%)',
+                  filter: 'blur(20px)',
+                }}
+              />
+
+              <div className="relative rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
+                {/* Header pill */}
+                <div className="px-4 pt-4 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.15, 1],
+                        opacity: [0.8, 1, 0.8],
+                      }}
+                      transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      <Heart className="w-3.5 h-3.5 text-pink-400 fill-pink-400/50" style={{ filter: 'drop-shadow(0 0 4px rgba(236,72,153,0.5))' }} />
+                    </motion.div>
+                    <span className="text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-white/70">
+                      For you
+                    </span>
+                    <span className="ml-auto text-[10px] font-mono font-bold text-pink-400/80 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/15">
+                      {received.length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+                {/* Sender list */}
+                <div className="px-2 py-2 max-h-56 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+                  {received.map((v, i) => (
+                    <motion.div
+                      key={`${v.sender_username}-${i}`}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.9 + i * 0.08 }}
+                      className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl hover:bg-white/[0.04] transition-all duration-300 group/sender"
+                    >
+                      <div className="relative shrink-0">
+                        <img
+                          src={v.sender_avatar_url}
+                          alt={v.sender_display_name}
+                          className="w-7 h-7 rounded-full border border-white/[0.08] group-hover/sender:border-pink-500/30 transition-colors duration-300"
+                        />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-pink-500/20 border border-pink-400/30 flex items-center justify-center">
+                          <Heart className="w-1.5 h-1.5 text-pink-400 fill-pink-400/60" />
+                        </div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] font-bold text-white/80 truncate leading-tight group-hover/sender:text-white transition-colors duration-300">{v.sender_display_name}</div>
+                        <div className="text-[9px] font-mono text-white/25 truncate group-hover/sender:text-white/40 transition-colors duration-300">@{v.sender_username}</div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
+
       {/* Persistent Page Credit */}
       <div className="fixed bottom-8 right-10 z-[100] hidden md:block select-none pointer-events-none">
         <InteractiveCredits />

@@ -142,3 +142,19 @@ export const fetchValentinesBySender = async (senderUsername: string): Promise<V
     return [];
   }
 };
+
+export const fetchValentinesForRecipient = async (recipientUsername: string): Promise<ValentineData[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('valentines')
+      .select('*')
+      .eq('recipient_username', recipientUsername)
+      .eq('recipient_type', 'user')
+      .order('created_at', { ascending: false });
+
+    if (error) return [];
+    return data as ValentineData[];
+  } catch {
+    return [];
+  }
+};
