@@ -16,6 +16,7 @@ import {
   GridItem,
 } from '../ui/infinite-drag-scroll';
 import { ValentineData, fetchAllValentines } from '../../services/valentineService';
+import { supabase } from '../../services/supabaseClient';
 import { DottedSurface } from '../ui/dotted-surface';
 import { ThemeProvider } from 'next-themes';
 
@@ -123,7 +124,16 @@ const ValentineWallPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
   const [selectedValentine, setSelectedValentine] = useState<ValentineData | null>(null);
+  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
   const scrollRef = useRef<DraggableContainerHandle>(null);
+
+  // Load current user's username from localStorage (set during auth in CreateValentineModal)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('valentine_sender_username');
+      if (stored) setCurrentUsername(stored);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     loadValentines();
@@ -396,6 +406,7 @@ const ValentineWallPage: React.FC = () => {
                         <ValentineCard
                           valentine={valentine}
                           layoutId={`wall-card-${valentine.sender_username}-${index}`}
+                          isOwn={!!currentUsername && valentine.sender_username === currentUsername}
                         />
                       </CrispCard>
                     </div>
@@ -424,7 +435,14 @@ const ValentineWallPage: React.FC = () => {
         {isModalOpen && (
           <CreateValentineModal
             isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
+            onClose={() => {
+              setIsModalOpen(false);
+              // Refresh current username in case user just authenticated
+              try {
+                const stored = localStorage.getItem('valentine_sender_username');
+                if (stored) setCurrentUsername(stored);
+              } catch {}
+            }}
             onSubmit={handleCreateOrUpdate}
           />
         )}

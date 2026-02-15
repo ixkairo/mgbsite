@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Heart } from 'lucide-react';
 import HeartContainer from './HeartContainer';
 import { ValentineData } from '../../services/valentineService';
 import { getValentineLayout } from './layoutConfig';
@@ -9,11 +10,12 @@ interface ValentineCardProps {
   valentine: ValentineData;
   layoutId?: string;
   showShadow?: boolean;
+  isOwn?: boolean;
 }
 
 const DESIGN_WIDTH = 650; // Base design width (full container width in preview)
 
-const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, showShadow = true }) => {
+const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, showShadow = true, isOwn = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState<number | null>(null);
 
@@ -137,9 +139,35 @@ const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, show
         WebkitFontSmoothing: 'antialiased',
         MozOsxFontSmoothing: 'grayscale',
         imageRendering: 'auto',
-        filter: scale !== null ? `drop-shadow(0 0 20px ${rarity.glow}33)` : 'none'
+        filter: scale !== null
+          ? isOwn
+            ? `drop-shadow(0 0 40px rgba(139, 92, 246, 0.6)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.3))`
+            : `drop-shadow(0 0 20px ${rarity.glow}33)`
+          : 'none'
       }}
     >
+      {/* Strong glow highlight for the current user's own valentines */}
+      {isOwn && scale !== null && (
+        <>
+          {/* Outer intense glow layer */}
+          <div
+            className="absolute inset-[-15%] z-[-1] pointer-events-none animate-pulse"
+            style={{
+              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.5) 0%, rgba(139, 92, 246, 0.2) 30%, rgba(168, 85, 247, 0.08) 55%, transparent 75%)`,
+              animationDuration: '2.5s',
+              filter: 'blur(8px)',
+            }}
+          />
+          {/* Inner sharp glow layer */}
+          <div
+            className="absolute inset-[-8%] z-[-1] pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.35) 0%, rgba(168, 85, 247, 0.12) 40%, transparent 70%)`,
+              filter: 'blur(4px)',
+            }}
+          />
+        </>
+      )}
       <HeartContainer
         glowColor={rarity.glow}
         valentineStyle={rarity.valentine}

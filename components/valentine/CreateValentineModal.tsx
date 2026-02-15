@@ -238,6 +238,8 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
 
         if (matchedUser) {
           setSender(matchedUser);
+          // Persist username so the wall can highlight this user's cards
+          try { localStorage.setItem('valentine_sender_username', matchedUser.username); } catch {}
           const valentines = await fetchValentinesBySender(matchedUser.username);
           setUserValentines(valentines);
           setStep(valentines.length > 0 ? 'select' : 'recipient');
