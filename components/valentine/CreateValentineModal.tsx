@@ -326,12 +326,12 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
     console.log('[Auth] Searching for:', normalized, 'among', usersWithScores.length, 'users');
 
     let user = usersWithScores.find(u =>
-      u.username.toLowerCase() === normalized ||
+      (u.username && u.username.toLowerCase() === normalized) ||
       (u.discord_username && (
         u.discord_username.toLowerCase() === normalized ||
         u.discord_username.toLowerCase().split('#')[0] === normalized
       )) ||
-      u.display_name.toLowerCase().includes(normalized)
+      (u.display_name && u.display_name.toLowerCase().includes(normalized))
     );
 
     if (!user) {
