@@ -79,6 +79,57 @@ const InteractiveCredits = () => {
 };
 import './heart.css';
 
+// Onboarding hint for drag & zoom controls (desktop only)
+const NavigationHint: React.FC = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.5 }}
+    className="fixed inset-0 z-[250] flex items-center justify-center pointer-events-none"
+  >
+    <div className="flex flex-col items-center gap-6 select-none">
+      {/* Drag hint */}
+      <div className="flex flex-col items-center gap-3">
+        <motion.div
+          animate={{ x: [0, 24, -24, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="relative"
+        >
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-white/70">
+            <path d="M18 11V6a2 2 0 0 0-4 0v1M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M18 11a2 2 0 0 1 4 0v3a8 8 0 0 1-8 8h-2c-2.5 0-4.5-1-6.2-2.8L3 16.2A2 2 0 0 1 3 13l.7-.7a2 2 0 0 1 2.3-.3L10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <motion.div
+            animate={{ opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-0.5 rounded-full bg-white/20"
+          />
+        </motion.div>
+        <span className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-white/50">
+          Drag to explore
+        </span>
+      </div>
+
+      <div className="w-1 h-1 rounded-full bg-white/15" />
+
+      {/* Scroll hint */}
+      <div className="flex flex-col items-center gap-3">
+        <div className="relative w-6 h-10 rounded-full border-2 border-white/30">
+          <motion.div
+            animate={{ y: [2, 10, 2] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute left-1/2 -translate-x-1/2 top-1.5 w-1.5 h-1.5 rounded-full bg-white/60"
+          />
+        </div>
+        <span className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-white/50">
+          Scroll to zoom
+        </span>
+      </div>
+    </div>
+  </motion.div>
+);
+
 const CARD_DESIGN_SIZE = 650;
 
 const CrispCard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -126,6 +177,10 @@ const ValentineWallPage: React.FC = () => {
   const [selectedValentine, setSelectedValentine] = useState<ValentineData | null>(null);
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  const [showNavHint, setShowNavHint] = useState(false);
+  const navHintReady = useRef(false); // true once valentines have loaded on desktop
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<DraggableContainerHandle>(null);
 
   useEffect(() => {
@@ -133,6 +188,44 @@ const ValentineWallPage: React.FC = () => {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // Idle detection: show hint after 3s of inactivity, hide on interaction
+  useEffect(() => {
+    if (isMobile) return;
+
+    const startIdleTimer = () => {
+      if (!navHintReady.current) return;
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      idleTimer.current = setTimeout(() => setShowNavHint(true), 3000);
+    };
+
+    const onActivity = () => {
+      // Hide hint if showing
+      setShowNavHint(false);
+      if (autoHideTimer.current) clearTimeout(autoHideTimer.current);
+      // Restart idle countdown
+      startIdleTimer();
+    };
+
+    const events = ['pointermove', 'pointerdown', 'wheel', 'keydown'] as const;
+    events.forEach(e => window.addEventListener(e, onActivity));
+
+    return () => {
+      events.forEach(e => window.removeEventListener(e, onActivity));
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      if (autoHideTimer.current) clearTimeout(autoHideTimer.current);
+    };
+  }, [isMobile]);
+
+  // Auto-hide hint after 5s of being visible
+  useEffect(() => {
+    if (!showNavHint) {
+      if (autoHideTimer.current) clearTimeout(autoHideTimer.current);
+      return;
+    }
+    autoHideTimer.current = setTimeout(() => setShowNavHint(false), 5000);
+    return () => { if (autoHideTimer.current) clearTimeout(autoHideTimer.current); };
+  }, [showNavHint]);
 
   // Load current user's username from localStorage (set during auth in CreateValentineModal)
   useEffect(() => {
@@ -172,6 +265,12 @@ const ValentineWallPage: React.FC = () => {
     const data = await fetchAllValentines();
     setValentines(data);
     setIsLoading(false);
+    // Activate idle hint system on desktop after load
+    if (!isMobile && data.length > 0) {
+      navHintReady.current = true;
+      // Show first hint after a short delay
+      idleTimer.current = setTimeout(() => setShowNavHint(true), 800);
+    }
   };
 
   const handleCreateOrUpdate = async (valentine: ValentineData, isEdit: boolean) => {
@@ -199,6 +298,11 @@ const ValentineWallPage: React.FC = () => {
       {/* Three.js Dotted Surface Background — disabled on mobile for performance */}
       {!isMobile && <DottedSurface className="opacity-40" />}
       <FloatingHearts />
+
+      {/* Navigation Hint — desktop only, appears on idle */}
+      <AnimatePresence>
+        {showNavHint && !isMobile && <NavigationHint />}
+      </AnimatePresence>
 
       {/* Ambient Light Sources — reduced on mobile for performance */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
