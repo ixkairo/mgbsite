@@ -85,9 +85,11 @@ export const saveValentine = async (valentine: ValentineData): Promise<boolean> 
   try {
     const { id, sender_role, recipient_role, sender_score, rarity_tier, sender_roles_raw, recipient_roles_raw, ...dataToSave } = valentine;
 
+    console.log('[Valentine] Saving:', { id, sender: valentine.sender_username, hasId: !!id });
+
     if (id) {
       // Update existing
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('valentines')
         .update({
           ...dataToSave,
@@ -96,34 +98,43 @@ export const saveValentine = async (valentine: ValentineData): Promise<boolean> 
         .eq('id', id);
 
       if (error) {
-        console.error('Update failed:', error.message);
+        console.error('[Valentine] Update failed:', error.message, error.details, error.hint);
         return false;
       }
+      console.log('[Valentine] Update OK, count:', count);
     } else {
       // Check limit before insert
       const existing = await fetchValentinesBySender(valentine.sender_username);
       if (existing.length >= 5) {
-        console.error('Valentine limit reached for user');
+        console.error('[Valentine] Limit reached (5) for:', valentine.sender_username);
         return false;
       }
 
-      // Insert new
-      const { error } = await supabase
+      // Insert new — use .select() to confirm the row was actually written
+      const { data: inserted, error } = await supabase
         .from('valentines')
         .insert({
           ...dataToSave,
           updated_at: new Date().toISOString()
-        });
+        })
+        .select();
 
       if (error) {
-        console.error('Insert failed:', error.message);
+        console.error('[Valentine] Insert failed:', error.message, error.details, error.hint, error.code);
         return false;
       }
+
+      if (!inserted || inserted.length === 0) {
+        console.error('[Valentine] Insert returned no rows — likely blocked by RLS policy. Check Supabase dashboard → valentines table → RLS policies.');
+        return false;
+      }
+
+      console.log('[Valentine] Insert OK, id:', inserted[0]?.id);
     }
 
     return true;
   } catch (err) {
-    console.error('Valentine save error:', err);
+    console.error('[Valentine] Save exception:', err);
     return false;
   }
 };

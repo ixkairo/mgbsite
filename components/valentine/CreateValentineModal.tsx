@@ -420,6 +420,14 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
   const handleSend = async () => {
     if (!sender || !message.trim()) return;
 
+    // Check for active Supabase auth session — required by RLS policy
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setSearchError('You must connect via Discord or Twitter to send valentines. Please go back and log in.');
+      setStep('identify');
+      return;
+    }
+
     try {
       const senderRoles = sender.discrod_roles ? sender.discrod_roles.split(/[,\-|]/).map(r => r.trim()) : [];
       const senderScore = (sender as any).magicianScore ?? 0;
@@ -450,7 +458,7 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
         onSubmit(valentine, isEdit);
         handleClose();
       } else {
-        alert('Failed to send valentine. Please check the database connection.');
+        alert('Failed to send valentine. This may be a permissions issue — try logging in via Discord or Twitter first.');
       }
     } catch (error) {
       console.error('Error sending valentine:', error);
