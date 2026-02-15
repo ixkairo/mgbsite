@@ -105,38 +105,23 @@ export const ValentineTransition: React.FC = () => {
         </div>
       ))}
 
-      {/* Layer 2: Hero Heart */}
+      {/* Center label */}
       <div className="absolute inset-0 flex items-center justify-center">
-        {/* Soft glow — radial gradient instead of blur filter for perf */}
+        {/* Soft glow behind text */}
         <div
-          className="absolute w-[28rem] h-[28rem] rounded-full"
+          className="absolute w-[24rem] h-[24rem] rounded-full"
           style={{
             animation: 'vt-glow 0.6s ease-out forwards',
-            background: 'radial-gradient(circle, rgba(236,72,153,0.15) 0%, rgba(236,72,153,0.05) 40%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(236,72,153,0.12) 0%, rgba(236,72,153,0.04) 40%, transparent 70%)',
             willChange: 'transform, opacity',
           }}
         />
 
-        {/* Main heart SVG */}
-        <div
-          className="relative z-10 text-pink-500"
-          style={{
-            animation: 'vt-hero 0.7s ease-out forwards',
-            filter: 'drop-shadow(0 0 25px rgba(236,72,153,0.3))',
-            willChange: 'transform, opacity',
-          }}
-        >
-          <svg width="220" height="220" viewBox="0 0 24 24" fill="currentColor">
-            <path d={HEART_PATH} />
-          </svg>
-        </div>
-
         {/* Label text */}
         <div
-          className="absolute mt-64"
-          style={{ animation: 'vt-label 0.6s 0.2s ease-out forwards', opacity: 0, willChange: 'opacity' }}
+          style={{ animation: 'vt-label 0.7s 0.15s ease-out forwards', opacity: 0, willChange: 'opacity' }}
         >
-          <span className="font-mono text-[8px] md:text-[10px] uppercase tracking-[0.8em] text-pink-300/20">
+          <span className="font-mono text-xs md:text-sm uppercase tracking-[0.5em] text-pink-300/40">
             Valentine Wall
           </span>
         </div>
