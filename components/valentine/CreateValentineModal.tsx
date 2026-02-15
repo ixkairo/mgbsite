@@ -135,7 +135,7 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserType | null>(null);
-  const [recipientType, setRecipientType] = useState<'community' | 'user'>('community');
+  const [recipientType, setRecipientType] = useState<'community' | 'user'>('user');
   const [recipientUsername, setRecipientUsername] = useState('');
   const [recipient, setRecipient] = useState<UserType | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -357,7 +357,7 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
       setIsEdit(false);
       setSelectedValentineId(null);
       setMessage('');
-      setRecipientType('community');
+      setRecipientType('user');
       setRecipientUsername('');
       setRecipient(null);
       setStep('recipient');
@@ -427,7 +427,7 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
       setSender(null);
       setRecipient(null);
       setRecipientUsername('');
-      setRecipientType('community');
+      setRecipientType('user');
       setUserValentines([]);
       setSelectedValentineId(null);
       setIsEdit(false);
@@ -862,26 +862,68 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
                 </h3>
 
                 <div className="space-y-3 mb-6">
-                  <button
+                  {/* Specific User option */}
+                  <div
                     onClick={() => setRecipientType('user')}
-                    className={`relative w-full flex items-center justify-between gap-3 px-6 py-6 rounded-[2rem] border transition-all duration-300 group overflow-hidden ${recipientType === 'user'
+                    className={`relative w-full rounded-[2rem] border transition-all duration-300 overflow-hidden cursor-pointer ${recipientType === 'user'
                       ? 'bg-white/[0.1] border-mb-purple/50 shadow-[0_0_25px_rgba(139,92,246,0.2)]'
                       : 'bg-white/[0.03] border-mb-purple/20 hover:bg-white/[0.06] hover:border-mb-purple/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.1)]'
                       }`}
                   >
                     {recipientType === 'user' && <div className="absolute inset-0 bg-mb-purple/10 pointer-events-none" />}
-                    <div className="flex items-center gap-4 relative z-10">
-                      <div className={`p-3 rounded-xl transition-colors ${recipientType === 'user' ? 'bg-mb-purple text-white shadow-lg' : 'bg-mb-purple/20 text-mb-purple'}`}>
-                        <User className="w-6 h-6" />
+                    <div className="flex items-center justify-between gap-3 px-6 py-5 relative z-10">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-xl transition-colors ${recipientType === 'user' ? 'bg-mb-purple text-white shadow-lg' : 'bg-mb-purple/20 text-mb-purple'}`}>
+                          <User className="w-6 h-6" />
+                        </div>
+                        <div className="text-left">
+                          <span className={`font-bold text-lg block ${recipientType === 'user' ? 'text-white' : 'text-white/80'}`}>Specific User</span>
+                          <span className="text-[10px] font-mono text-white/40 tracking-wider uppercase">Send to a friend</span>
+                        </div>
                       </div>
-                      <div className="text-left">
-                        <span className={`font-bold text-lg block ${recipientType === 'user' ? 'text-white' : 'text-white/80'}`}>Specific User</span>
-                        <span className="text-[10px] font-mono text-white/40 tracking-wider uppercase">Send to a friend</span>
-                      </div>
+                      {recipientType === 'user' && <div className="w-2.5 h-2.5 rounded-full bg-mb-purple shadow-[0_0_10px_#8B5CF6]" />}
                     </div>
-                    {recipientType === 'user' && <div className="w-2.5 h-2.5 rounded-full bg-mb-purple shadow-[0_0_10px_#8B5CF6]" />}
-                  </button>
 
+                    {/* Search input embedded inside this card */}
+                    <AnimatePresence>
+                      {recipientType === 'user' && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5 relative z-10" onClick={(e) => e.stopPropagation()}>
+                            <div className="relative group/rinput">
+                              <div className="absolute -inset-0.5 bg-gradient-to-r from-mb-purple/50 to-pink-500/50 rounded-full opacity-0 group-focus-within/rinput:opacity-100 transition-opacity duration-500 blur-sm" />
+                              <div className="relative flex items-center bg-black/50 border border-white/20 rounded-full overflow-hidden">
+                                <div className="pl-5 text-white/40">
+                                  <Search size={14} />
+                                </div>
+                                <input
+                                  ref={recipientInputRef}
+                                  type="text"
+                                  value={recipientUsername}
+                                  onChange={(e) => {
+                                    setRecipientUsername(e.target.value);
+                                    setSearchError('');
+                                  }}
+                                  placeholder="SEARCH RECIPIENT..."
+                                  className="w-full px-4 py-3 bg-transparent text-white text-[10px] font-mono tracking-[0.2em] uppercase placeholder:text-white/20 focus:outline-none"
+                                />
+                              </div>
+                              {searchError && (
+                                <p className="mt-2 text-[9px] text-red-400 font-mono uppercase tracking-wider text-center">{searchError}</p>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Community option */}
                   <button
                     onClick={() => setRecipientType('community')}
                     className={`relative w-full flex items-center justify-between gap-3 px-6 py-4 rounded-[2rem] border transition-all duration-300 group overflow-hidden ${recipientType === 'community'
@@ -902,40 +944,6 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
                     {recipientType === 'community' && <div className="w-2 h-2 rounded-full bg-white/50" />}
                   </button>
                 </div>
-
-                <AnimatePresence>
-                  {recipientType === 'user' && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                      animate={{ opacity: 1, height: 'auto', marginTop: 24 }}
-                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="relative group/rinput">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-mb-purple/50 to-pink-500/50 rounded-full opacity-0 group-focus-within/rinput:opacity-100 transition-opacity duration-500 blur-sm" />
-                        <div className="relative flex items-center bg-black/50 border border-white/20 rounded-full overflow-hidden">
-                          <div className="pl-5 text-white/40">
-                            <Search size={14} />
-                          </div>
-                          <input
-                            ref={recipientInputRef}
-                            type="text"
-                            value={recipientUsername}
-                            onChange={(e) => {
-                              setRecipientUsername(e.target.value);
-                              setSearchError('');
-                            }}
-                            placeholder="SEARCH RECIPIENT..."
-                            className="w-full px-4 py-3 bg-transparent text-white text-[10px] font-mono tracking-[0.2em] uppercase placeholder:text-white/20 focus:outline-none"
-                          />
-                        </div>
-                        {searchError && (
-                          <p className="mt-2 text-[9px] text-red-400 font-mono uppercase tracking-wider text-center">{searchError}</p>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 <div className="flex gap-3 mt-8">
                   <motion.button

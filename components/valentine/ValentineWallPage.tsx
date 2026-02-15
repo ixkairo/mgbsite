@@ -407,6 +407,7 @@ const ValentineWallPage: React.FC = () => {
                           valentine={valentine}
                           layoutId={`wall-card-${valentine.sender_username}-${index}`}
                           isOwn={!!currentUsername && valentine.sender_username === currentUsername}
+                          isForMe={!!currentUsername && valentine.recipient_type === 'user' && valentine.recipient_username === currentUsername}
                         />
                       </CrispCard>
                     </div>

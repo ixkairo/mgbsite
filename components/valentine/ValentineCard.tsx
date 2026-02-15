@@ -11,11 +11,12 @@ interface ValentineCardProps {
   layoutId?: string;
   showShadow?: boolean;
   isOwn?: boolean;
+  isForMe?: boolean;
 }
 
 const DESIGN_WIDTH = 650; // Base design width (full container width in preview)
 
-const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, showShadow = true, isOwn = false }) => {
+const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, showShadow = true, isOwn = false, isForMe = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState<number | null>(null);
 
@@ -142,12 +143,14 @@ const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, show
         filter: scale !== null
           ? isOwn
             ? `drop-shadow(0 0 40px rgba(139, 92, 246, 0.6)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.3))`
-            : `drop-shadow(0 0 18px ${rarity.valentine?.glow || rarity.glow})`
+            : isForMe
+              ? `drop-shadow(0 0 35px rgba(236, 72, 153, 0.5)) drop-shadow(0 0 70px rgba(236, 72, 153, 0.25))`
+              : `drop-shadow(0 0 18px ${rarity.valentine?.glow || rarity.glow})`
           : 'none'
       }}
     >
       {/* Ambient rarity-colored glow behind every card */}
-      {scale !== null && !isOwn && (
+      {scale !== null && !isOwn && !isForMe && (
         <div
           className="absolute inset-[-8%] z-[-1] pointer-events-none"
           style={{
@@ -158,7 +161,7 @@ const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, show
         />
       )}
 
-      {/* Stronger pulsing glow for the current user's own valentines */}
+      {/* Pulsing purple glow for the current user's own valentines (FROM ME) */}
       {isOwn && scale !== null && (
         <>
           <div
@@ -177,6 +180,57 @@ const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, show
             }}
           />
         </>
+      )}
+
+      {/* Pink glow for valentines sent TO the current user (TO ME) */}
+      {isForMe && !isOwn && scale !== null && (
+        <>
+          <div
+            className="absolute inset-[-18%] z-[-1] pointer-events-none animate-pulse"
+            style={{
+              background: `radial-gradient(ellipse at center, rgba(236, 72, 153, 0.5) 0%, rgba(236, 72, 153, 0.2) 30%, rgba(219, 39, 119, 0.06) 55%, transparent 75%)`,
+              animationDuration: '3s',
+              filter: 'blur(10px)',
+            }}
+          />
+          <div
+            className="absolute inset-[-8%] z-[-1] pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse at center, rgba(236, 72, 153, 0.3) 0%, rgba(219, 39, 119, 0.1) 40%, transparent 70%)`,
+              filter: 'blur(5px)',
+            }}
+          />
+        </>
+      )}
+
+      {/* "From me" / "To me" badge */}
+      {(isOwn || isForMe) && scale !== null && (
+        <div
+          className="absolute z-[30] flex items-center gap-1.5 rounded-full backdrop-blur-xl"
+          style={{
+            bottom: `${Math.round(14 * (scale || 1))}px`,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: `${Math.max(3, Math.round(5 * (scale || 1)))}px ${Math.max(8, Math.round(14 * (scale || 1)))}px`,
+            background: isOwn ? 'rgba(139, 92, 246, 0.4)' : 'rgba(236, 72, 153, 0.4)',
+            border: `1.5px solid ${isOwn ? 'rgba(167, 139, 250, 0.6)' : 'rgba(244, 114, 182, 0.6)'}`,
+            boxShadow: `0 0 16px ${isOwn ? 'rgba(139, 92, 246, 0.4)' : 'rgba(236, 72, 153, 0.4)'}, 0 0 4px ${isOwn ? 'rgba(139, 92, 246, 0.2)' : 'rgba(236, 72, 153, 0.2)'} inset`,
+          }}
+        >
+          <Heart
+            style={{
+              width: `${Math.max(10, Math.round(14 * (scale || 1)))}px`,
+              height: `${Math.max(10, Math.round(14 * (scale || 1)))}px`,
+            }}
+            className={isOwn ? 'text-purple-200 fill-purple-300/60' : 'text-pink-200 fill-pink-300/60'}
+          />
+          <span
+            className={`font-mono font-bold uppercase tracking-[0.2em] ${isOwn ? 'text-purple-100' : 'text-pink-100'}`}
+            style={{ fontSize: `${Math.max(8, Math.round(11 * (scale || 1)))}px` }}
+          >
+            {isOwn ? 'From me' : 'To me'}
+          </span>
+        </div>
       )}
       <HeartContainer
         glowColor={rarity.glow}
