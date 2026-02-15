@@ -436,8 +436,8 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
       const valentine: ValentineData = {
         id: selectedValentineId || undefined,
         sender_username: sender.username,
-        sender_avatar_url: sender.avatar_url,
-        sender_display_name: sender.display_name,
+        sender_avatar_url: sender.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.username)}&background=8B5CF6&color=fff`,
+        sender_display_name: sender.display_name || sender.username,
         sender_discord_username: sender.discord_username || undefined,
         sender_role: getBestRole(sender),
         sender_roles_raw: sender.discrod_roles,
@@ -445,8 +445,8 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
         rarity_tier: senderRarity.tier,
         recipient_type: recipientType,
         recipient_username: recipientType === 'user' ? recipient?.username : undefined,
-        recipient_display_name: recipientType === 'user' ? recipient?.display_name : undefined,
-        recipient_avatar_url: recipientType === 'user' ? recipient?.avatar_url : undefined,
+        recipient_display_name: recipientType === 'user' ? (recipient?.display_name || recipient?.username) : undefined,
+        recipient_avatar_url: recipientType === 'user' ? (recipient?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(recipient?.username || '')}&background=8B5CF6&color=fff`) : undefined,
         recipient_role: (recipientType === 'user' && recipient) ? getBestRole(recipient) : undefined,
         recipient_roles_raw: (recipientType === 'user' && recipient) ? recipient.discrod_roles : undefined,
         message_text: message.trim()
