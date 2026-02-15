@@ -178,9 +178,8 @@ const ValentineWallPage: React.FC = () => {
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [showNavHint, setShowNavHint] = useState(false);
-  const navHintReady = useRef(false); // true once valentines have loaded on desktop
+  const navHintReady = useRef(false);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autoHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<DraggableContainerHandle>(null);
 
   useEffect(() => {
@@ -189,7 +188,7 @@ const ValentineWallPage: React.FC = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Idle detection: show hint after 3s of inactivity, hide on interaction
+  // Hint stays visible until user drags or scrolls, then reappears after 3s idle
   useEffect(() => {
     if (isMobile) return;
 
@@ -199,33 +198,21 @@ const ValentineWallPage: React.FC = () => {
       idleTimer.current = setTimeout(() => setShowNavHint(true), 3000);
     };
 
-    const onActivity = () => {
-      // Hide hint if showing
+    const onInteract = () => {
       setShowNavHint(false);
-      if (autoHideTimer.current) clearTimeout(autoHideTimer.current);
-      // Restart idle countdown
       startIdleTimer();
     };
 
-    const events = ['pointermove', 'pointerdown', 'wheel', 'keydown'] as const;
-    events.forEach(e => window.addEventListener(e, onActivity));
+    // Only real interactions (drag / scroll) dismiss the hint
+    window.addEventListener('pointerdown', onInteract);
+    window.addEventListener('wheel', onInteract);
 
     return () => {
-      events.forEach(e => window.removeEventListener(e, onActivity));
+      window.removeEventListener('pointerdown', onInteract);
+      window.removeEventListener('wheel', onInteract);
       if (idleTimer.current) clearTimeout(idleTimer.current);
-      if (autoHideTimer.current) clearTimeout(autoHideTimer.current);
     };
   }, [isMobile]);
-
-  // Auto-hide hint after 5s of being visible
-  useEffect(() => {
-    if (!showNavHint) {
-      if (autoHideTimer.current) clearTimeout(autoHideTimer.current);
-      return;
-    }
-    autoHideTimer.current = setTimeout(() => setShowNavHint(false), 5000);
-    return () => { if (autoHideTimer.current) clearTimeout(autoHideTimer.current); };
-  }, [showNavHint]);
 
   // Load current user's username from localStorage (set during auth in CreateValentineModal)
   useEffect(() => {

@@ -213,79 +213,66 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
   }, [isOpen]);
 
   const handleAuthSession = async (user: any) => {
-    // Discord handles usually in user_metadata, Twitter handles in various fields depending on provider
-    const isTwitter = user.app_metadata?.provider === 'twitter' || user.app_metadata?.provider === 'x';
-
-    // Debug: log all metadata so we can see exactly what Discord returns
     console.log('[Auth] Provider:', user.app_metadata?.provider);
     console.log('[Auth] user_metadata:', JSON.stringify(user.user_metadata, null, 2));
     console.log('[Auth] identities:', JSON.stringify(user.identities?.map((i: any) => ({ provider: i.provider, identity_data: i.identity_data })), null, 2));
 
-    let handle = '';
-    if (isTwitter) {
-      handle = user.user_metadata?.user_name || user.user_metadata?.screen_name || user.user_metadata?.preferred_username;
-    } else {
-      // Discord: preferred_username = actual Discord username,
-      // name/full_name = global display name (often different!)
-      // Also check identities array for the raw Discord data
-      const discordIdentity = user.identities?.find((i: any) => i.provider === 'discord');
-      const rawDiscord =
-        user.user_metadata?.preferred_username ||
-        discordIdentity?.identity_data?.preferred_username ||
-        discordIdentity?.identity_data?.custom_claims?.global_name ||
-        user.user_metadata?.custom_claims?.global_name ||
-        user.user_metadata?.name ||
-        user.user_metadata?.full_name ||
-        user.user_metadata?.user_name;
-      handle = rawDiscord ? rawDiscord.split('#')[0] : '';
-      console.log('[Auth] Extracted Discord handle:', handle);
+    // Collect ALL possible handles from every linked identity
+    const twitterIdentity = user.identities?.find((i: any) => i.provider === 'x' || i.provider === 'twitter');
+    const discordIdentity = user.identities?.find((i: any) => i.provider === 'discord');
+
+    const candidateHandles: string[] = [
+      // Twitter identity handles
+      twitterIdentity?.identity_data?.user_name,
+      twitterIdentity?.identity_data?.preferred_username,
+      twitterIdentity?.identity_data?.screen_name,
+      // Discord identity handles
+      discordIdentity?.identity_data?.preferred_username,
+      discordIdentity?.identity_data?.custom_claims?.global_name,
+      discordIdentity?.identity_data?.name,
+      discordIdentity?.identity_data?.full_name,
+      // Top-level user_metadata (may mix providers)
+      user.user_metadata?.user_name,
+      user.user_metadata?.preferred_username,
+      user.user_metadata?.custom_claims?.global_name,
+      user.user_metadata?.name,
+      user.user_metadata?.full_name,
+    ]
+      .filter(Boolean)
+      .map((n: string) => n.split('#')[0].trim().toLowerCase())
+      .filter((v, i, a) => v && a.indexOf(v) === i); // unique, non-empty
+
+    console.log('[Auth] Candidate handles:', candidateHandles);
+
+    if (candidateHandles.length === 0) {
+      setSearchError('Could not retrieve your username from any linked account.');
+      return;
     }
 
-    if (handle) {
-      const normalizedHandle = handle.toLowerCase();
-      setIsSearching(true);
-      try {
-        // Find user: match discord_username for Discord, username for Twitter
-        let matchedUser = await searchUser(normalizedHandle);
+    setIsSearching(true);
+    try {
+      let matchedUser: UserType | null = null;
 
-        // If not found with primary handle, try other metadata fields as fallback
-        if (!matchedUser && !isTwitter) {
-          const fallbackNames = [
-            user.user_metadata?.preferred_username,
-            user.user_metadata?.name,
-            user.user_metadata?.full_name,
-            user.user_metadata?.user_name,
-            user.identities?.find((i: any) => i.provider === 'discord')?.identity_data?.preferred_username,
-            user.identities?.find((i: any) => i.provider === 'discord')?.identity_data?.custom_claims?.global_name,
-          ].filter(Boolean).map((n: string) => n.split('#')[0].toLowerCase());
-
-          // Try each unique name that wasn't already tried
-          const uniqueNames = [...new Set(fallbackNames)].filter(n => n !== normalizedHandle);
-          for (const name of uniqueNames) {
-            console.log('[Auth] Trying fallback name:', name);
-            matchedUser = await searchUser(name);
-            if (matchedUser) break;
-          }
-        }
-
-        if (matchedUser) {
-          setSender(matchedUser);
-          // Persist username so the wall can highlight this user's cards
-          try { localStorage.setItem('valentine_sender_username', matchedUser.username); } catch {}
-          const valentines = await fetchValentinesBySender(matchedUser.username);
-          setUserValentines(valentines);
-          setStep(valentines.length > 0 ? 'select' : 'recipient');
-          setSearchError('');
-        } else {
-          setSearchError("NOT FOUND. YOU ARE NOT A PART OF MAGICBLOCK COMMUNITY.");
-        }
-      } catch (err) {
-        setSearchError('Profile verification failed. Please try again.');
-      } finally {
-        setIsSearching(false);
+      for (const handle of candidateHandles) {
+        console.log('[Auth] Trying handle:', handle);
+        matchedUser = await searchUser(handle);
+        if (matchedUser) break;
       }
-    } else {
-      setSearchError(`Could not retrieve your ${isTwitter ? 'Twitter' : 'Discord'} username.`);
+
+      if (matchedUser) {
+        setSender(matchedUser);
+        try { localStorage.setItem('valentine_sender_username', matchedUser.username); } catch {}
+        const valentines = await fetchValentinesBySender(matchedUser.username);
+        setUserValentines(valentines);
+        setStep(valentines.length > 0 ? 'select' : 'recipient');
+        setSearchError('');
+      } else {
+        setSearchError("NOT FOUND. YOU ARE NOT A PART OF MAGICBLOCK COMMUNITY.");
+      }
+    } catch (err) {
+      setSearchError('Profile verification failed. Please try again.');
+    } finally {
+      setIsSearching(false);
     }
   };
 
