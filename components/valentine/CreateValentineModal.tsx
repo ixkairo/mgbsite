@@ -323,17 +323,24 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
     const usersWithScores = computeMagicianScores(rawUsers);
     const normalized = input.trim().toLowerCase().replace(/^@/, '');
 
+    console.log('[Auth] Searching for:', normalized, 'among', usersWithScores.length, 'users');
+
     let user = usersWithScores.find(u =>
       u.username.toLowerCase() === normalized ||
-      (u.discord_username && u.discord_username.toLowerCase() === normalized) ||
+      (u.discord_username && (
+        u.discord_username.toLowerCase() === normalized ||
+        u.discord_username.toLowerCase().split('#')[0] === normalized
+      )) ||
       u.display_name.toLowerCase().includes(normalized)
     );
 
     if (!user) {
+      console.log('[Auth] Not found in memory, trying DB fallback...');
       const directUser = await findUserByIdentifier(normalized);
       if (directUser) user = directUser as any;
     }
 
+    console.log('[Auth] Search result:', user ? `Found: ${user.username} (discord: ${user.discord_username})` : 'NOT FOUND');
     return user || null;
   };
 

@@ -79,7 +79,7 @@ export const findUserByIdentifier = async (identifier: string): Promise<User | n
         const { data, error } = await supabase
             .from('users')
             .select('*')
-            .or(`username.ilike.${safeId},discord_username.ilike.${safeId},display_name.ilike.%${safeId}%`)
+            .or(`username.ilike.${safeId},discord_username.ilike.${safeId},discord_username.ilike.${safeId}#%,display_name.ilike.%${safeId}%`)
             .limit(1)
             .single();
 
