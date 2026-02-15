@@ -142,28 +142,38 @@ const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, show
         filter: scale !== null
           ? isOwn
             ? `drop-shadow(0 0 40px rgba(139, 92, 246, 0.6)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.3))`
-            : `drop-shadow(0 0 20px ${rarity.glow}33)`
+            : `drop-shadow(0 0 18px ${rarity.valentine?.glow || rarity.glow})`
           : 'none'
       }}
     >
-      {/* Strong glow highlight for the current user's own valentines */}
+      {/* Ambient rarity-colored glow behind every card */}
+      {scale !== null && !isOwn && (
+        <div
+          className="absolute inset-[-8%] z-[-1] pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse at center, ${rarity.valentine?.glow || rarity.glow} 0%, transparent 60%)`,
+            opacity: 0.15,
+            filter: 'blur(12px)',
+          }}
+        />
+      )}
+
+      {/* Stronger pulsing glow for the current user's own valentines */}
       {isOwn && scale !== null && (
         <>
-          {/* Outer intense glow layer */}
           <div
-            className="absolute inset-[-15%] z-[-1] pointer-events-none animate-pulse"
+            className="absolute inset-[-20%] z-[-1] pointer-events-none animate-pulse"
             style={{
-              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.5) 0%, rgba(139, 92, 246, 0.2) 30%, rgba(168, 85, 247, 0.08) 55%, transparent 75%)`,
+              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0.25) 30%, rgba(168, 85, 247, 0.08) 55%, transparent 75%)`,
               animationDuration: '2.5s',
-              filter: 'blur(8px)',
+              filter: 'blur(10px)',
             }}
           />
-          {/* Inner sharp glow layer */}
           <div
-            className="absolute inset-[-8%] z-[-1] pointer-events-none"
+            className="absolute inset-[-10%] z-[-1] pointer-events-none"
             style={{
-              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.35) 0%, rgba(168, 85, 247, 0.12) 40%, transparent 70%)`,
-              filter: 'blur(4px)',
+              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.4) 0%, rgba(168, 85, 247, 0.15) 40%, transparent 70%)`,
+              filter: 'blur(5px)',
             }}
           />
         </>
