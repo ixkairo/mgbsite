@@ -216,17 +216,29 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
     // Discord handles usually in user_metadata, Twitter handles in various fields depending on provider
     const isTwitter = user.app_metadata?.provider === 'twitter' || user.app_metadata?.provider === 'x';
 
+    // Debug: log all metadata so we can see exactly what Discord returns
+    console.log('[Auth] Provider:', user.app_metadata?.provider);
+    console.log('[Auth] user_metadata:', JSON.stringify(user.user_metadata, null, 2));
+    console.log('[Auth] identities:', JSON.stringify(user.identities?.map((i: any) => ({ provider: i.provider, identity_data: i.identity_data })), null, 2));
+
     let handle = '';
     if (isTwitter) {
       handle = user.user_metadata?.user_name || user.user_metadata?.screen_name || user.user_metadata?.preferred_username;
     } else {
-      // Discord handle
+      // Discord: preferred_username = actual Discord username,
+      // name/full_name = global display name (often different!)
+      // Also check identities array for the raw Discord data
+      const discordIdentity = user.identities?.find((i: any) => i.provider === 'discord');
       const rawDiscord =
         user.user_metadata?.preferred_username ||
+        discordIdentity?.identity_data?.preferred_username ||
+        discordIdentity?.identity_data?.custom_claims?.global_name ||
+        user.user_metadata?.custom_claims?.global_name ||
         user.user_metadata?.name ||
         user.user_metadata?.full_name ||
         user.user_metadata?.user_name;
       handle = rawDiscord ? rawDiscord.split('#')[0] : '';
+      console.log('[Auth] Extracted Discord handle:', handle);
     }
 
     if (handle) {
@@ -234,7 +246,27 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
       setIsSearching(true);
       try {
         // Find user: match discord_username for Discord, username for Twitter
-        const matchedUser = await searchUser(normalizedHandle);
+        let matchedUser = await searchUser(normalizedHandle);
+
+        // If not found with primary handle, try other metadata fields as fallback
+        if (!matchedUser && !isTwitter) {
+          const fallbackNames = [
+            user.user_metadata?.preferred_username,
+            user.user_metadata?.name,
+            user.user_metadata?.full_name,
+            user.user_metadata?.user_name,
+            user.identities?.find((i: any) => i.provider === 'discord')?.identity_data?.preferred_username,
+            user.identities?.find((i: any) => i.provider === 'discord')?.identity_data?.custom_claims?.global_name,
+          ].filter(Boolean).map((n: string) => n.split('#')[0].toLowerCase());
+
+          // Try each unique name that wasn't already tried
+          const uniqueNames = [...new Set(fallbackNames)].filter(n => n !== normalizedHandle);
+          for (const name of uniqueNames) {
+            console.log('[Auth] Trying fallback name:', name);
+            matchedUser = await searchUser(name);
+            if (matchedUser) break;
+          }
+        }
 
         if (matchedUser) {
           setSender(matchedUser);
@@ -262,7 +294,8 @@ const CreateValentineModal: React.FC<CreateValentineModalProps> = ({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
-        redirectTo: window.location.origin + '/valentinewall?openModal=true'
+        redirectTo: window.location.origin + '/valentinewall?openModal=true',
+        scopes: 'identify'
       }
     });
     if (error) setSearchError(error.message);
