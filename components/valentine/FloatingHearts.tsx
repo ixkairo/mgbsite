@@ -54,14 +54,21 @@ FloatingHeart.displayName = "FloatingHeart";
 
 export const FloatingHearts: React.FC = () => {
     const [hearts, setHearts] = useState<Heart[]>([]);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     useEffect(() => {
-        // Initial batch - more dense
-        const newHearts = Array.from({ length: 35 }).map((_, i) => ({
+        const mobile = window.innerWidth < 768;
+        const initialCount = mobile ? 8 : 35;
+        const maxCount = mobile ? 12 : 45;
+        const spawnInterval = mobile ? 2500 : 800;
+        const maxSize = mobile ? 40 : 75;
+
+        // Initial batch
+        const newHearts = Array.from({ length: initialCount }).map((_, i) => ({
             id: i,
             x: Math.random() * 100,
             y: Math.random() * 100 + 10,
-            size: 15 + Math.random() * 75,
+            size: 15 + Math.random() * maxSize,
             duration: 8 + Math.random() * 14,
             delay: Math.random() * 10,
             rotate: Math.random() * 360
@@ -75,16 +82,15 @@ export const FloatingHearts: React.FC = () => {
                     id: nextId,
                     x: Math.random() * 100,
                     y: Math.random() * 100 + 40,
-                    size: 15 + Math.random() * 75,
+                    size: 15 + Math.random() * maxSize,
                     duration: 8 + Math.random() * 14,
                     delay: 0,
                     rotate: Math.random() * 360
                 };
-                // Keep a max of 45 hearts for a richer atmosphere
-                const updated = [...prev.slice(-44), newHeart];
+                const updated = [...prev.slice(-(maxCount - 1)), newHeart];
                 return updated;
             });
-        }, 800); // Spawning frequency increased
+        }, spawnInterval);
 
         return () => clearInterval(interval);
     }, []);

@@ -15,6 +15,7 @@ interface ValentineCardProps {
 }
 
 const DESIGN_WIDTH = 650; // Base design width (full container width in preview)
+const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
 
 const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, showShadow = true, isOwn = false, isForMe = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -142,15 +143,21 @@ const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, show
         imageRendering: 'auto',
         filter: scale !== null
           ? isOwn
-            ? `drop-shadow(0 0 40px rgba(139, 92, 246, 0.6)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.3))`
+            ? isMobileDevice
+              ? `drop-shadow(0 0 12px rgba(139, 92, 246, 0.5))`
+              : `drop-shadow(0 0 40px rgba(139, 92, 246, 0.6)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.3))`
             : isForMe
-              ? `drop-shadow(0 0 35px rgba(236, 72, 153, 0.5)) drop-shadow(0 0 70px rgba(236, 72, 153, 0.25))`
-              : `drop-shadow(0 0 18px ${rarity.valentine?.glow || rarity.glow})`
+              ? isMobileDevice
+                ? `drop-shadow(0 0 10px rgba(236, 72, 153, 0.4))`
+                : `drop-shadow(0 0 35px rgba(236, 72, 153, 0.5)) drop-shadow(0 0 70px rgba(236, 72, 153, 0.25))`
+              : isMobileDevice
+                ? `drop-shadow(0 0 6px ${rarity.valentine?.glow || rarity.glow})`
+                : `drop-shadow(0 0 18px ${rarity.valentine?.glow || rarity.glow})`
           : 'none'
       }}
     >
       {/* Ambient rarity-colored glow behind every card */}
-      {scale !== null && !isOwn && !isForMe && (
+      {scale !== null && !isOwn && !isForMe && !isMobileDevice && (
         <div
           className="absolute inset-[-8%] z-[-1] pointer-events-none"
           style={{
@@ -163,50 +170,68 @@ const ValentineCard: React.FC<ValentineCardProps> = ({ valentine, layoutId, show
 
       {/* Pulsing purple glow for the current user's own valentines (FROM ME) */}
       {isOwn && scale !== null && (
-        <>
+        isMobileDevice ? (
           <div
-            className="absolute inset-[-20%] z-[-1] pointer-events-none animate-pulse"
+            className="absolute inset-[-6%] z-[-1] pointer-events-none"
             style={{
-              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0.25) 30%, rgba(168, 85, 247, 0.08) 55%, transparent 75%)`,
-              animationDuration: '2.5s',
-              filter: 'blur(10px)',
+              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.35) 0%, transparent 70%)`,
             }}
           />
-          <div
-            className="absolute inset-[-10%] z-[-1] pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.4) 0%, rgba(168, 85, 247, 0.15) 40%, transparent 70%)`,
-              filter: 'blur(5px)',
-            }}
-          />
-        </>
+        ) : (
+          <>
+            <div
+              className="absolute inset-[-20%] z-[-1] pointer-events-none animate-pulse"
+              style={{
+                background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0.25) 30%, rgba(168, 85, 247, 0.08) 55%, transparent 75%)`,
+                animationDuration: '2.5s',
+                filter: 'blur(10px)',
+              }}
+            />
+            <div
+              className="absolute inset-[-10%] z-[-1] pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse at center, rgba(139, 92, 246, 0.4) 0%, rgba(168, 85, 247, 0.15) 40%, transparent 70%)`,
+                filter: 'blur(5px)',
+              }}
+            />
+          </>
+        )
       )}
 
       {/* Pink glow for valentines sent TO the current user (TO ME) */}
       {isForMe && !isOwn && scale !== null && (
-        <>
+        isMobileDevice ? (
           <div
-            className="absolute inset-[-18%] z-[-1] pointer-events-none animate-pulse"
+            className="absolute inset-[-6%] z-[-1] pointer-events-none"
             style={{
-              background: `radial-gradient(ellipse at center, rgba(236, 72, 153, 0.5) 0%, rgba(236, 72, 153, 0.2) 30%, rgba(219, 39, 119, 0.06) 55%, transparent 75%)`,
-              animationDuration: '3s',
-              filter: 'blur(10px)',
+              background: `radial-gradient(ellipse at center, rgba(236, 72, 153, 0.3) 0%, transparent 70%)`,
             }}
           />
-          <div
-            className="absolute inset-[-8%] z-[-1] pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse at center, rgba(236, 72, 153, 0.3) 0%, rgba(219, 39, 119, 0.1) 40%, transparent 70%)`,
-              filter: 'blur(5px)',
-            }}
-          />
-        </>
+        ) : (
+          <>
+            <div
+              className="absolute inset-[-18%] z-[-1] pointer-events-none animate-pulse"
+              style={{
+                background: `radial-gradient(ellipse at center, rgba(236, 72, 153, 0.5) 0%, rgba(236, 72, 153, 0.2) 30%, rgba(219, 39, 119, 0.06) 55%, transparent 75%)`,
+                animationDuration: '3s',
+                filter: 'blur(10px)',
+              }}
+            />
+            <div
+              className="absolute inset-[-8%] z-[-1] pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse at center, rgba(236, 72, 153, 0.3) 0%, rgba(219, 39, 119, 0.1) 40%, transparent 70%)`,
+                filter: 'blur(5px)',
+              }}
+            />
+          </>
+        )
       )}
 
       {/* "From me" / "To me" badge */}
       {(isOwn || isForMe) && scale !== null && (
         <div
-          className="absolute z-[30] flex items-center gap-1.5 rounded-full backdrop-blur-xl"
+          className={`absolute z-[30] flex items-center gap-1.5 rounded-full ${isMobileDevice ? '' : 'backdrop-blur-xl'}`}
           style={{
             bottom: `${Math.round(14 * (scale || 1))}px`,
             left: '50%',

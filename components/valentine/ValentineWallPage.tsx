@@ -125,7 +125,14 @@ const ValentineWallPage: React.FC = () => {
   const [isExiting, setIsExiting] = useState(false);
   const [selectedValentine, setSelectedValentine] = useState<ValentineData | null>(null);
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const scrollRef = useRef<DraggableContainerHandle>(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Load current user's username from localStorage (set during auth in CreateValentineModal)
   useEffect(() => {
@@ -185,22 +192,28 @@ const ValentineWallPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-transparent text-white relative overflow-x-hidden overflow-y-auto">
+    <div className={`min-h-screen w-full bg-transparent text-white relative ${isMobile ? '' : 'overflow-x-hidden overflow-y-auto'}`}>
       {/* Page Entrance Transition */}
       <ValentineTransition />
 
-      {/* Three.js Dotted Surface Background */}
-      <DottedSurface className="opacity-40" />
+      {/* Three.js Dotted Surface Background — disabled on mobile for performance */}
+      {!isMobile && <DottedSurface className="opacity-40" />}
       <FloatingHearts />
 
-      {/* Ambient Light Sources — same as PlayerPage */}
+      {/* Ambient Light Sources — reduced on mobile for performance */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="absolute w-[150vw] h-[100vh] bg-purple-900/[0.02] blur-[250px] rounded-full mix-blend-screen will-change-transform" style={{ transform: 'translateZ(0)' }} />
-          <div className="w-[80%] h-[120%] bg-pink-500/[0.03] blur-[180px] rounded-full animate-pulse will-change-transform" style={{ transform: 'translateZ(0)', animationDuration: '5s' }} />
-          <div className="absolute w-[40%] h-[80%] bg-purple-500/[0.04] blur-[100px] rounded-full mix-blend-screen will-change-transform" style={{ transform: 'translateZ(0)' }} />
-          <div className="absolute w-[20%] h-[40%] bg-pink-400/[0.08] blur-[60px] rounded-full mix-blend-plus-lighter will-change-transform" style={{ transform: 'translateZ(0)' }} />
-          <div className="absolute top-0 w-full h-[400px] bg-gradient-to-b from-purple-500/[0.02] to-transparent blur-[120px] will-change-transform" style={{ transform: 'translateZ(0)' }} />
+          {!isMobile && (
+            <>
+              <div className="absolute w-[150vw] h-[100vh] bg-purple-900/[0.02] blur-[250px] rounded-full mix-blend-screen will-change-transform" style={{ transform: 'translateZ(0)' }} />
+              <div className="absolute w-[40%] h-[80%] bg-purple-500/[0.04] blur-[100px] rounded-full mix-blend-screen will-change-transform" style={{ transform: 'translateZ(0)' }} />
+              <div className="absolute top-0 w-full h-[400px] bg-gradient-to-b from-purple-500/[0.02] to-transparent blur-[120px] will-change-transform" style={{ transform: 'translateZ(0)' }} />
+            </>
+          )}
+          <div className={`${isMobile ? 'w-[60%] h-[60%]' : 'w-[80%] h-[120%]'} bg-pink-500/[0.03] rounded-full will-change-transform ${isMobile ? '' : 'animate-pulse'}`} style={{ transform: 'translateZ(0)', animationDuration: '5s', filter: `blur(${isMobile ? 60 : 180}px)` }} />
+          {!isMobile && (
+            <div className="absolute w-[20%] h-[40%] bg-pink-400/[0.08] blur-[60px] rounded-full mix-blend-plus-lighter will-change-transform" style={{ transform: 'translateZ(0)' }} />
+          )}
         </div>
       </div>
 
@@ -218,8 +231,12 @@ const ValentineWallPage: React.FC = () => {
 
       {/* Fixed Top Bar — Back + Title + Leaderboard Button */}
       <div className="fixed top-0 left-0 right-0 z-[200] pointer-events-none">
-        <div className="flex items-center justify-between px-3 md:px-6 py-2 md:py-4">
-          {/* Back Button — same style as PlayerPage */}
+        {/* Top bar background fade on mobile */}
+        {isMobile && (
+          <div className="absolute inset-x-0 top-0 h-16 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
+        )}
+        <div className="relative flex items-center justify-between px-3 md:px-6 py-2 md:py-4">
+          {/* Back Button */}
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: isExiting ? 0 : 1, x: 0 }}
@@ -227,40 +244,41 @@ const ValentineWallPage: React.FC = () => {
             whileHover={{ x: -6, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.3 }}
-            className="pointer-events-auto flex items-center gap-2 md:gap-2.5 px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white/[0.05] border border-white/10 text-[8px] md:text-[11px] font-bold uppercase tracking-[0.16em] md:tracking-[0.25em] text-white/60 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 hover:text-white hover:shadow-[0_0_20px_rgba(255,255,255,0.1),0_0_1px_rgba(255,255,255,0.3)_inset] backdrop-blur-md group/back shrink-0"
+            className="pointer-events-auto flex items-center gap-1.5 md:gap-2.5 px-2.5 md:px-4 py-1.5 md:py-2.5 rounded-full bg-white/[0.05] border border-white/10 text-[8px] md:text-[11px] font-bold uppercase tracking-[0.16em] md:tracking-[0.25em] text-white/60 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 hover:text-white backdrop-blur-md group/back shrink-0"
           >
-            <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover/back:-translate-x-1" />
+            <ArrowLeft className="w-3 h-3 md:w-3.5 md:h-3.5 transition-transform group-hover/back:-translate-x-1" />
             <span>Back</span>
           </motion.button>
 
-          {/* Center Title Badge — Leaderboard-style header */}
+          {/* Center Title Badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: isExiting ? 0 : 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="pointer-events-none absolute left-0 right-0 top-2 md:top-4 flex flex-col items-center justify-center"
+            className="pointer-events-none absolute left-0 right-0 top-1.5 md:top-4 flex flex-col items-center justify-center"
           >
-            <div className="flex items-center gap-2 mb-0.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-mb-purple shadow-[0_0_10px_#8B5CF6] animate-pulse" />
-              <span className="text-[8px] md:text-[9px] font-mono tracking-[0.4em] uppercase text-mb-purple font-bold">valentine's day 2026</span>
-            </div>
-            <h1 className="text-lg md:text-3xl font-sync font-bold tracking-tighter uppercase text-white leading-none flex items-baseline gap-2">
-              <span>MGB Valentine Wall</span>
-              <Heart className="w-3 md:w-4 h-3 md:h-4 text-mb-purple fill-mb-purple/30 flex-shrink-0" />
+            {!isMobile && (
+              <div className="flex items-center gap-2 mb-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-mb-purple shadow-[0_0_10px_#8B5CF6] animate-pulse" />
+                <span className="text-[9px] font-mono tracking-[0.4em] uppercase text-mb-purple font-bold">valentine's day 2026</span>
+              </div>
+            )}
+            <h1 className={`${isMobile ? 'text-sm' : 'text-lg md:text-3xl'} font-sync font-bold tracking-tighter uppercase text-white leading-none flex items-center gap-1.5 md:gap-2`}>
+              <span>{isMobile ? 'Valentine Wall' : 'MGB Valentine Wall'}</span>
+              <Heart className="w-2.5 md:w-4 h-2.5 md:h-4 text-mb-purple fill-mb-purple/30 flex-shrink-0" />
             </h1>
           </motion.div>
 
-          {/* Top Right Buttons: Leaderboard & Magic Cards */}
-          <div className="flex flex-col items-end gap-2 pointer-events-none">
+          {/* Top Right Buttons */}
+          <div className={`flex ${isMobile ? 'flex-row gap-1.5' : 'flex-col gap-2'} items-end pointer-events-none`}>
             {/* Leaderboard Button */}
             <motion.button
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: isExiting ? 0 : 1, x: 0 }}
               onClick={() => navigate('/leaderboard', { state: { skipLanding: true } })}
-              whileHover={{ x: 6, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.3 }}
-              className="pointer-events-auto flex items-center gap-2 md:gap-2.5 px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white/[0.05] border border-white/10 text-[8px] md:text-[11px] font-bold uppercase tracking-[0.16em] md:tracking-[0.25em] text-white/60 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 hover:text-white hover:shadow-[0_0_20px_rgba(255,255,255,0.1),0_0_1px_rgba(255,255,255,0.3)_inset] backdrop-blur-md group/board shrink-0"
+              className="pointer-events-auto flex items-center gap-1.5 md:gap-2.5 px-2.5 md:px-4 py-1.5 md:py-2.5 rounded-full bg-white/[0.05] border border-white/10 text-[8px] md:text-[11px] font-bold uppercase tracking-[0.16em] md:tracking-[0.25em] text-white/60 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 hover:text-white backdrop-blur-md shrink-0"
             >
               <Trophy className="w-3 h-3 md:w-3.5 md:h-3.5" />
               <span className="hidden sm:inline">Leaderboard</span>
@@ -271,10 +289,9 @@ const ValentineWallPage: React.FC = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: isExiting ? 0 : 1, x: 0 }}
               onClick={() => navigate('/card')}
-              whileHover={{ x: 6, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className="pointer-events-auto flex items-center gap-2 md:gap-2.5 px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white/[0.05] border border-white/10 text-[8px] md:text-[11px] font-bold uppercase tracking-[0.16em] md:tracking-[0.25em] text-white/60 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 hover:text-white hover:shadow-[0_0_20px_rgba(255,255,255,0.1),0_0_1px_rgba(255,255,255,0.3)_inset] backdrop-blur-md group/magic shrink-0"
+              className="pointer-events-auto flex items-center gap-1.5 md:gap-2.5 px-2.5 md:px-4 py-1.5 md:py-2.5 rounded-full bg-white/[0.05] border border-white/10 text-[8px] md:text-[11px] font-bold uppercase tracking-[0.16em] md:tracking-[0.25em] text-white/60 transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 hover:text-white backdrop-blur-md shrink-0"
             >
               <Sparkles className="w-3 h-3 md:w-3.5 md:h-3.5" />
               <span className="hidden sm:inline">Magic Cards</span>
@@ -285,41 +302,46 @@ const ValentineWallPage: React.FC = () => {
 
       {/* Floating Glass Counter - Elegantly positioned below header */}
       {!isLoading && valentines.length > 0 && (
-        <div className="fixed top-20 md:top-24 left-0 right-0 z-[190] pointer-events-none flex flex-col items-center justify-center gap-3">
+        <div className={`fixed ${isMobile ? 'top-14' : 'top-20 md:top-24'} left-0 right-0 z-[190] pointer-events-none flex flex-col items-center justify-center gap-2 md:gap-3`}>
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="flex items-center gap-3 px-5 py-2 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:bg-white/[0.05] transition-colors pointer-events-auto"
+            className="flex items-center gap-2 md:gap-3 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.12)] pointer-events-auto"
           >
-            <div className="loader scale-[0.4] origin-center filter drop-shadow-[0_0_8px_rgba(236,72,153,0.6)]"></div>
+            <div className="loader scale-[0.35] md:scale-[0.4] origin-center filter drop-shadow-[0_0_8px_rgba(236,72,153,0.6)]"></div>
             <div className="flex flex-col items-start leading-none">
-              <span className="text-[10px] md:text-[11px] font-mono font-bold text-white tracking-[0.2em]">
+              <span className="text-[9px] md:text-[11px] font-mono font-bold text-white tracking-[0.2em]">
                 {valentines.length} VALENTINES
               </span>
-              <span className="text-[8px] font-mono text-white/40 tracking-wider">
+              <span className="text-[7px] md:text-[8px] font-mono text-white/40 tracking-wider">
                 SENT TO THE VOID
               </span>
             </div>
           </motion.div>
 
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            onClick={() => scrollRef.current?.resetView()}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-[9px] font-bold uppercase tracking-widest text-white/40 hover:text-white hover:bg-white/10 transition-all pointer-events-auto backdrop-blur-md"
-          >
-            <Maximize className="w-3 h-3" />
-            <span>Recenter View</span>
-          </motion.button>
+          {!isMobile && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              onClick={() => scrollRef.current?.resetView()}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-[9px] font-bold uppercase tracking-widest text-white/40 hover:text-white hover:bg-white/10 transition-all pointer-events-auto backdrop-blur-md"
+            >
+              <Maximize className="w-3 h-3" />
+              <span>Recenter View</span>
+            </motion.button>
+          )}
         </div>
       )}
 
-      {/* Fixed Bottom Bar — Create Valentine Button Only */}
+      {/* Fixed Bottom Bar — Create Valentine Button */}
       <div className="fixed bottom-0 left-0 right-0 z-[200] pointer-events-none">
-        <div className="flex flex-col items-center px-6 pb-6 md:pb-8 gap-3">
-          {/* Create Valentine Button */}
+        {/* Gradient fade behind button on mobile so it's always visible */}
+        {isMobile && (
+          <div className="absolute inset-x-0 bottom-0 h-28 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%)' }} />
+        )}
+        <div className="relative flex flex-col items-center px-6 pb-8 md:pb-8 gap-3" style={isMobile ? { paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 1.5rem))' } : undefined}>
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             onClick={() => setIsModalOpen(true)}
@@ -361,7 +383,7 @@ const ValentineWallPage: React.FC = () => {
               <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/10">Loading Valentines</span>
             </div>
           ) : valentines.length === 0 ? (
-            /* Empty State — Leaderboard neutral style */
+            /* Empty State */
             <div className="flex flex-col items-center justify-center min-h-screen">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -383,8 +405,31 @@ const ValentineWallPage: React.FC = () => {
                 </button>
               </motion.div>
             </div>
+          ) : isMobile ? (
+            /* MOBILE: Simple scrollable 2-column grid — no drag, no chaos, smooth performance */
+            <div className="pt-24 pb-28 px-3">
+              <div className="grid grid-cols-2 gap-3">
+                {valentines.map((valentine, index) => (
+                  <div
+                    key={`${valentine.sender_username}-${index}`}
+                    className="w-full"
+                    onClick={() => setSelectedValentine(valentine)}
+                  >
+                    <CrispCard>
+                      <ValentineCard
+                        valentine={valentine}
+                        layoutId={`wall-card-${valentine.sender_username}-${index}`}
+                        showShadow={false}
+                        isOwn={!!currentUsername && valentine.sender_username === currentUsername}
+                        isForMe={!!currentUsername && valentine.recipient_type === 'user' && valentine.recipient_username === currentUsername}
+                      />
+                    </CrispCard>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
-            /* Infinite Drag-Scroll Grid of Valentine Cards */
+            /* DESKTOP: Infinite Drag-Scroll Grid of Valentine Cards */
             <DraggableContainer ref={scrollRef} variant="chaos">
               <GridBody>
                 {valentines.map((valentine, index) => (
